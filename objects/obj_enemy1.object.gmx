@@ -29,7 +29,7 @@
 level = global.level
 str = level;
 expGain = level*10;
-stam = level*20;
+stam = 1000*sin(level)+(20*level);
 enemy_max_health = 100+stam;
 enemy_health = enemy_max_health;
 </string>

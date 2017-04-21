@@ -28,13 +28,13 @@ switch(key){
                     if(global.skillCooldown[2] == 0){
                         global.sp -= mpUse;
                         global.skillCooldown[2] = global.skillMaxCooldown[2];
-                        for(i = 0; i < useSkill(22,1); i++){
+                        for(var i = 0; i < useSkill(22,1); i++){
                             with(instance_create(x,y,obj_force)){
                                 speed = 5;
                                 direction = irandom(360);
                                 homing = true;
                                 destroyOnWall = false;
-                                if(global.skillCooldown[0] > 60){
+                                if(global.skillCooldown[0] > 60) {
                                     dmg_mod = 0.6+useSkill(20,1);
                                 }
                                 else{
@@ -55,21 +55,21 @@ switch(key){
                     if(global.skillCooldown[3] == 0){
                         global.sp -= mpUse;
                         global.skillCooldown[3] = global.skillMaxCooldown[3];
-                        for(i = 0; i < 15; i++){
+                        for(var i = 0; i < 8; i++){
                             with(instance_create(x,y,obj_force)){
-                                speed = 5;
+                                speed = 3;
                                 direction = irandom(360);
                                 homePlayer = true;
                                 bounce = true;
-                                homePlayerOrder = other.i+1;
+                                homePlayerOrder = irandom_range(1,4);
                                 dmg_mod = 1;
                                 multiHit = true;
                                 hitInt = maxHitInt;
-                                maxHit = 20;
+                                maxHit = 100;
                                 image_xscale = 2;
                                 deleteWhenOut = false;
-                                alarm[0] = 10;
-                                alarm[1] = 1800;
+                                alarm[0] = 50;
+                                alarm[1] = 1200;
                             }
                         }
                     }

@@ -39,7 +39,7 @@ global.maxSP = 30;
 global.hpGen = 0;
 global.spGen = 0;
 global.sp = global.maxSP;
-global.xp = calculateTotalXP(100);
+global.xp = calculateTotalXP(0);
 global.maxXP = 10;
 global.gold = 0;
 global.dualWield = false;
@@ -73,8 +73,7 @@ openSkillWindow = false;
 openDetailStat = false;
 skill_init();
 skillCoordinate();
-setAllSkills(-1);
-
+//setAllSkills(-1);
 global.useLighting = false;
 if(global.useLighting){
     lightmap_init(view_wview[0],view_hview[0]);
@@ -203,6 +202,7 @@ if(global.xp &gt;= global.maxXP){
                 increaseHPSP(15,5);
                 break;
     }
+    heal(global.maxHP,global.maxSP);
 }
 </string>
           </argument>

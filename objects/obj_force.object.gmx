@@ -56,6 +56,7 @@ canDamage = true;
 homing = false;
 target = -1;
 homeRate = 5;
+fire = 0;
 
 speedUp = false;
 speedingRate = 1;
@@ -165,7 +166,8 @@ direction = direction_wipe(direction,target,10);
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if(homing){
+            <string>if (fire &lt; 1) {fire++;}
+if(homing){
     if(homeRate &lt; 20) {homeRate += 0.1;}
     if(instance_exists(target)){
         direction = direction_wipe(direction,point_direction(x,y,target.x,target.y),homeRate);
@@ -175,11 +177,36 @@ direction = direction_wipe(direction,target,10);
     }
 }
 if(homePlayer){
-    //Use Dot Product
+    var x1 = x+lengthdir_x(1,image_angle);
+    var y1 = y+lengthdir_y(1,image_angle);
+    var x2 = x+lengthdir_x(1,point_direction(x,y,obj_player.x,obj_player.y));
+    var y2 = y+lengthdir_y(1,point_direction(x,y,obj_player.x,obj_player.y));
+
+    var xx = (x2+x1)-x;
+    var yy = (y2+y1)-y;
+    
+    direction = direction_wipe(direction,point_direction(x,y,xx,yy),homePlayerOrder);
+    speed = var_wipe(speed,3,100,0.3,0);
+    target = instance_nearest(x,y,obj_enemy_parent);
+    if(distance_to_object(target) &lt; 128) {
+        if(fire &gt; 0) {
+            fire -= 8;
+            with(instance_create(x,y,obj_force)) {
+                direction = point_direction(x,y,other.target.x,other.target.y);
+                dmg_mod = 0.05
+                if(global.skillCooldown[0] &gt; 60) {dmg_mod += useSkill(20,1);}
+                speed = 10;
+            }
+        }
+        if(distance_to_object(target) &lt; 32) {
+            direction = direction_wipe(direction,point_direction(x,y,target.x,target.y),5);
+        }
+    }
     /*if(distance_to_object(obj_player) &gt; 64){
         direction = direction_wipe(direction,point_direction(x,y,obj_player.x,obj_player.y),5);
     }
     else{
+        //direction = direction_wipe(direction,point_direction(x,y,obj_player.x,obj_player.y)+90,2);
         direction += 5;
         x = var_wipe(x,obj_player.x+lengthdir_x(64-(homePlayerOrder*10),direction),100,0,1);
         y = var_wipe(y,obj_player.y+lengthdir_y(64-(homePlayerOrder*10),direction),100,0,1);
