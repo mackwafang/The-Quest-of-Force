@@ -54,7 +54,7 @@ wait = 0;
           <argument>
             <kind>1</kind>
             <string>if(size &gt; 1){
-    size *= 0.9;
+    size *= 0.8;
 }
 else{
     size = 1;
@@ -62,7 +62,7 @@ else{
         wait ++;
     }
     else{
-        vspeed = -1;
+        //vspeed = -1;
         if(alpha &gt; 0) {alpha -= 0.1;} else {instance_destroy();}
     }
 }

@@ -252,7 +252,7 @@ global.skill[19,7] = 0.05;
         global.skill[26,4] = "[Weapon Summon] Summons weapons and attack the nearest enemy";
         global.skill[26,5] = 0;
         global.skill[26,6] = 90;
-        global.skill[26,7] = 0.2;
+        global.skill[26,7] = 0.1;
         /************* SKILL 28 **************/
         global.skill[27,0] = 0;
         global.skill[27,1] = 1;

@@ -28,10 +28,9 @@
             <string>event_inherited();
 level = global.level
 str = level;
-stam = level;
 expGain = level*10;
-stam = level*2;
-enemy_max_health = 60+(stam*30);
+stam = level*20;
+enemy_max_health = 100+stam;
 enemy_health = enemy_max_health;
 </string>
           </argument>

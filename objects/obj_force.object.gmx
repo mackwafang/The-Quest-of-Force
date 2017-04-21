@@ -175,14 +175,15 @@ direction = direction_wipe(direction,target,10);
     }
 }
 if(homePlayer){
-    if(distance_to_object(obj_player) &gt; 64){
+    //Use Dot Product
+    /*if(distance_to_object(obj_player) &gt; 64){
         direction = direction_wipe(direction,point_direction(x,y,obj_player.x,obj_player.y),5);
     }
     else{
         direction += 5;
         x = var_wipe(x,obj_player.x+lengthdir_x(64-(homePlayerOrder*10),direction),100,0,1);
         y = var_wipe(y,obj_player.y+lengthdir_y(64-(homePlayerOrder*10),direction),100,0,1);
-    }
+    }*/
 }
 alarm[0] = 1;
 </string>

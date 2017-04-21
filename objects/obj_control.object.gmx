@@ -25,7 +25,7 @@
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>global.class = 1;
+            <string>global.class = 0;
 global.str = 10;
 global.stam = 10;
 global.mana = 5;
@@ -73,6 +73,7 @@ openSkillWindow = false;
 openDetailStat = false;
 skill_init();
 skillCoordinate();
+setAllSkills(-1);
 
 global.useLighting = false;
 if(global.useLighting){

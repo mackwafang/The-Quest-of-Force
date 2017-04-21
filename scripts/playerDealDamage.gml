@@ -30,6 +30,7 @@ switch(type){
                     }
                 }
             }
+            damage -= stam div 10;
             break;
     case 1: if(irandom(99) < global.crit){
                 damage = max(global.mana+global.critAtt,1);
@@ -68,11 +69,11 @@ switch(type){
                     }
                 }
             }
-            knockback(self,other,other.dmg_mod,10);
+            damage -= mana div 10;
+            knockback(self,other,0,1);
             break;
 }
 damage = round(damage*other.dmg_mod*max(1,useSkill(19,1)));
-damage -= stam div 10;
 with(instance_create(x+irandom_range(-16,16),y-32+irandom(8),obj_dmg_inc)){
     damage = string(other.damage);
     color = white;
