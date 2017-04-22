@@ -29,7 +29,7 @@
 moveSpeed = 0;
 fire = 0;
 friction = 0.1;
-swordSide = 1;
+weaponSide = 1;
 healthGen = 0;
 manaGen = 0;
 dmg_mod = 1;
@@ -45,7 +45,8 @@ damage = 0;
 totalDamage = 0;
 totalFade = 0;
 totalCrit = 1;
-swordAngle = 0;
+weaponAngle = 0;
+weaponImage = spr_sword;
 hitInt = 0;
 skillActiveTime = 0;
 skillAmmo = 0;
@@ -155,7 +156,7 @@ if(fire &lt; 1){
 }
 if(mouse_check_button(mb_left)){
     if(fire &gt; 0){
-        swordSide *= -1;
+        weaponSide *= -1;
         manaGen = -60;
         fire -= 20-useSkill(42,1);
         if(global.class == 1){
@@ -282,6 +283,59 @@ for(i = 1; i &lt;= 4; i++){
             case 0: useForceMasterSkill(i); break;
             case 1: useSwordmanSkill(i); break;
             case 2: useWazardSkill(i); break;
+        }
+    }
+}
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="4" ename="obj_enemy_force">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>if(other.canDamage){
+    if(other.allowPierce){ //peircing
+        if(!inArray(other.pierce,id)){
+            enemyDealDamage(other.dmg_type);
+            other.pierce[other.aIndex] = id;
+            ++other.aIndex;
+        }
+    }
+    else if(other.multiHit){ //multiple hit
+        if(hitInt &lt; other.maxHitInt){ //Check interval
+            hitInt++; // increment
+        }
+        else{
+            hitInt = 0; //reset counter
+            if(other.hit &lt; other.maxHit){//increment total allowed hit
+                other.hit++;
+            }
+            else{
+                with(other) {instance_destroy();}
+            }
+            enemyDealDamage(other.dmg_type);
+            // deal damage
+        }
+    }
+    else{ //normal hit
+        enemyDealDamage(1);
+        with(other){
+            instance_destroy();
         }
     }
 }
@@ -442,12 +496,12 @@ draw_text_transformed_colour(xx,yy-24,totalDamage,min(2,totalCrit),min(2,totalCr
           <argument>
             <kind>1</kind>
             <string>draw_self();
-var sword_x, sword_y;
-swordAngle = direction_wipe(swordAngle,image_angle-(fire*swordSide*20)-20,50);
-sword_x = lengthdir_x(8,image_angle);
-sword_y = lengthdir_y(8,image_angle);
-draw_sprite_ext(spr_sword,0,x+sword_x,y+sword_y,swordSide,1,swordAngle,white,1);
-if(global.dualWield) {draw_sprite_ext(spr_sword,0,x+sword_x,y+sword_y,-swordSide,-1,image_angle-(-fire*swordSide*20)-20,white,1);}
+var weapon_x, weapon_y;
+weaponAngle = direction_wipe(weaponAngle,image_angle-(fire*weaponSide*20)-20,50);
+weapon_x = lengthdir_x(8,image_angle);
+weapon_y = lengthdir_y(8,image_angle);
+draw_sprite_ext(weaponImage,0,x+weapon_x,y+weapon_y,weaponSide,1,weaponAngle,white,1);
+if(global.dualWield) {draw_sprite_ext(weaponImage,0,x+weapon_x,y+weapon_y,-weaponSide,-1,image_angle-(-fire*weaponSide*20)-20,white,1);}
 </string>
           </argument>
         </arguments>

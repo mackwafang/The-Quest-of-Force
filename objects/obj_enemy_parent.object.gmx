@@ -26,6 +26,7 @@
           <argument>
             <kind>1</kind>
             <string>event_inherited();
+image_speed = 0;
 friction = 0.1;
 level = 1;
 str = 0;
@@ -45,9 +46,14 @@ maxSpotFov = 45;
 maxSpotRange = 196;
 spotFov = minSpotFov;
 spotRange = minSpotRange;
+fire = 0;
+equipWeapon = false;
+weaponImage = spr_sword;
+weaponAngle = 0;
+weaponSide = 1;
 alertTime = 0;
-alertRate = 5;
-alert = 0;
+alertRate = 0.2;
+alert = 0; //Alert level 0: Normal, 1: Alerted, 2: Spot
 for(i = 0; i &lt; 10; i++){
     statusChange[i,0] = -1; //Effect type
     statusChange[i,1] = 0; //Effect time
@@ -62,6 +68,7 @@ goX = 0;
 goY = 0;
 statusSystem = part_system_create();
 statusType = part_type_create();
+target = -1;
 alarm[0] = 60;
 </string>
           </argument>
@@ -166,7 +173,7 @@ else{
         healthShow = var_wipe(healthShow,enemy_health,enemy_max_health,0,2);
     }
 }
-image_angle = var_wipe(image_angle,direction,100,0.1,0) mod 360;
+image_angle = direction;
 if(canMove &amp;&amp; place_free(goX,goY)){
     if(point_distance(x,y,goX,goY) &gt; 10){
         direction = point_direction(x,y,goX,goY);
@@ -176,6 +183,7 @@ if(canMove &amp;&amp; place_free(goX,goY)){
         repeat(2) ds_queue_dequeue(coordinates);
     }
 }
+if (fire &lt; 1) {fire++;}
 healthShow = clamp(healthShow,0,100);
 if(enemy_health &lt;= 0){
     enemy_health = 0;
@@ -248,13 +256,30 @@ for(i = 0; i &lt; 10; i++){
     }
 }
 knockbackPerform();
-var target;
 if(instance_exists(obj_player)) {target = obj_player;}
+if(equipWeapon) {
+    if(fire &gt; 0) {
+        if(distance_to_object(target) &lt; 32) {
+            if(inViewRange(self,target,45)) {
+                fire -= 20;
+                weaponSide *= -1;
+                knockback(target,self,1,2);
+                enemyDealDamage(0);
+            }
+        }
+}
+}
 if(canMove){
     if(inViewRange(self,target,spotFov)){
         if(point_distance(x,y,target.x,target.y) &lt; spotRange){
             alert = 2;
             alertTime = 300;
+        }
+    }
+    else if(instance_exists(obj_force)) { 
+        if(inViewRange(self,obj_force,spotFov)) {
+            alert = 1;
+            alertTime = 600;
         }
     }
 }
@@ -265,11 +290,11 @@ else{
     alert = 0;
 }
 switch(alert){
-    case 0: spotRange = var_wipe(spotRange,minSpotRange,100,0,1);
-            spotFov = var_wipe(spotFov,minSpotFov,100,0,0.5);
+    case 0: spotRange = var_wipe(spotRange,minSpotRange,100,0.05,0);
+            spotFov = var_wipe(spotFov,minSpotFov,100,0.05,0);
             break;
-    case 1: spotRange = var_wipe(spotRange,maxSpotRange,100,0,alertRate/2);
-            spotFov = var_wipe(spotFov,minSpotFov*2,100,0,alertRate/2);
+    case 1: spotRange = var_wipe(spotRange,maxSpotRange,100,alertRate/2,0);
+            spotFov = var_wipe(spotFov,minSpotFov*2,100,alertRate/2,0);
             if(alertTime &gt; 0){
                 alertTime--;
             }
@@ -277,11 +302,35 @@ switch(alert){
                 alert = 0;
             }
             break;
-    case 2: spotRange = var_wipe(spotRange,maxSpotRange,100,0,alertRate);
-            spotFov = var_wipe(spotFov,maxSpotFov,100,0,alertRate);
+    case 2: spotRange = var_wipe(spotRange,maxSpotRange,100,alertRate,0);
+            spotFov = var_wipe(spotFov,maxSpotFov,100,alertRate,0);
             if(kbTime == 0){
-                direction = point_direction(x,y,target.x,target.y);
-                speed = 1;
+                if(object_index != obj_enemy_wizard) {
+                    direction = point_direction(x,y,target.x,target.y);
+                    speed = 1;
+                }
+                else {
+                    if(distance_to_object(target) &gt; 128) {
+                        direction = point_direction(x,y,target.x,target.y);
+                        speed = 1;
+                    }
+                    else {
+                        if(fire &gt; 0) {
+                            fire -= 20;
+                            with(instance_create(x,y,obj_enemy_force)) {
+                                direction = point_direction(x,y,other.target.x,other.target.y);
+                                speed = 4;
+                                dmg_type = 1;
+                                critRate = other.critRate;
+                                critDamage = other.critDamage;
+                                damage = other.mana;
+                                dmg_mod = 2;
+                                isMagic = true;
+                                visible = false;
+                            }
+                        }
+                    }
+                }
                 alarm[0] = 60;
             }
             break;
@@ -332,8 +381,16 @@ speed = 0;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>alertTime = 600;
-alert = 1;
+            <string>if(alert != 2) {
+    direction = -other.direction;
+    //Make stay in place
+    goX = x;
+    goY = y;
+    ds_queue_clear(coordinates);
+    alarm[0] = 60;
+    alertTime = 600;
+    alert = 1;
+}
 image_angle = other.direction;
 ds_queue_clear(coordinates);
 for(var i = 0; i &lt; 10; i++){
@@ -358,7 +415,7 @@ if(other.canDamage){
                 other.hit++;
             }
             else{
-                instance_destroy();
+                with(other) {instance_destroy();}
             }
             playerDealDamage(other.dmg_type,false);
             // deal damage
@@ -393,7 +450,8 @@ if(other.canDamage){
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>enemyDealDamage(0);
+            <string>knockback(other,self,2,15);
+enemyDealDamage(0);
 </string>
           </argument>
         </arguments>
@@ -448,12 +506,26 @@ yv = view_yview[0];
 xx = (x-xv)*windowXRatio;
 yy = (y-yv)*windowYRatio;
 
-draw_text_colour(xx,yy-25,"Lv."+string(level),white,white,white,white,1);
-draw_set_alpha(min((-point_distance(x,y,mouse_x,mouse_y)/(useSkill(52,1)+1))+1,1));
-draw_rectangle_colour(xx-20,yy-15,xx+20,yy-25,0,0,0,0,false);
-draw_rectangle_colour(xx-18,yy-17,xx-18+(healthShow/100)*36,yy-23,red,red,red,red,false);
-draw_rectangle_colour(xx-18,yy-17,xx-18+((enemy_health/enemy_max_health)*36),yy-23,green,green,green,green,false);
-draw_set_alpha(1)
+/*var x1 = lengthdir_x(spotRange,image_angle-spotFov);
+var y1 = lengthdir_y(spotRange,image_angle-spotFov);
+var x2 = lengthdir_x(spotRange,image_angle+spotFov);
+var y2 = lengthdir_y(spotRange,image_angle+spotFov);
+draw_line(xx,yy,xx+x1,yy+y1);
+draw_line(xx,yy,xx+x2,yy+y2);*/
+/*
+if(alert != 0) {
+    draw_sprite(spr_alert,alert,xx,yy-40);
+}
+*/
+
+draw_text_colour(xx,yy-26,"Lv."+string(level),white,white,white,white,1);
+//draw_set_alpha(min((-point_distance(x,y,mouse_x,mouse_y)/(useSkill(52,1)+1))+1,1));
+draw_rectangle_colour(xx-20,yy-16,xx+20,yy-26,0,0,0,0,false);
+draw_rectangle_colour(xx-18,yy-18,xx-18+(healthShow/100)*36,yy-24,red,red,red,red,false);
+draw_rectangle_colour(xx-18,yy-18,xx-18+((enemy_health/enemy_max_health)*36),yy-24,green,green,green,green,false);
+draw_set_valign(fa_top);
+draw_set_halign(fa_center);
+//draw_set_alpha(1);
 draw_set_font(global.damage_font);
 //draw_text_transformed_colour(xx,yy-40,totalDamage,min(2,totalCrit),min(2,totalCrit),0,white,white,white,white,totalFade);
 </string>
@@ -478,8 +550,14 @@ draw_set_font(global.damage_font);
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if(sprite_index != -1) {draw_self();}
-
+            <string>draw_self();
+if(equipWeapon) {
+    var weapon_x, weapon_y;
+    weaponAngle = direction_wipe(weaponAngle,image_angle-(fire*weaponSide*20)-20,50);
+    weapon_x = lengthdir_x(8,image_angle);
+    weapon_y = lengthdir_y(8,image_angle);
+    draw_sprite_ext(weaponImage,0,x+weapon_x,y+weapon_y,weaponSide,1,weaponAngle,white,1);
+}
 </string>
           </argument>
         </arguments>

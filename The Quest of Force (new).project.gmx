@@ -7,9 +7,10 @@
   <sounds name="sound"/>
   <sprites name="sprites">
     <sprite>sprites\spr_player</sprite>
+    <sprite>sprites\spr_enemy</sprite>
     <sprite>sprites\spr_force</sprite>
     <sprite>sprites\spr_sword</sprite>
-    <sprite>sprites\spr_stall</sprite>
+    <sprite>sprites\spr_staff</sprite>
     <sprite>sprites\spr_damage_font</sprite>
     <sprite>sprites\spr_wall</sprite>
     <sprite>sprites\spr_critical</sprite>
@@ -29,6 +30,7 @@
     <sprite>sprites\spr_magic_circle</sprite>
     <sprite>sprites\spr_maze_sprite</sprite>
     <sprite>sprites\spr_maze_walls</sprite>
+    <sprite>sprites\spr_alert</sprite>
   </sprites>
   <backgrounds name="background">
     <background>background\bkg_grass</background>
@@ -105,13 +107,17 @@
     <script>scripts\unvisitedNeighbors.gml</script>
     <script>scripts\makeWalls.gml</script>
     <script>scripts\dungeonSize.gml</script>
+    <script>scripts\enemyListInit.gml</script>
   </scripts>
   <objects name="objects">
     <object>objects\obj_kinetic</object>
     <object>objects\obj_player</object>
     <object>objects\obj_force</object>
+    <object>objects\obj_enemy_force</object>
     <object>objects\obj_enemy_parent</object>
     <object>objects\obj_enemy1</object>
+    <object>objects\obj_enemy_sword</object>
+    <object>objects\obj_enemy_wizard</object>
     <object>objects\obj_control</object>
     <object>objects\obj_dmg_inc</object>
     <object>objects\obj_wall</object>

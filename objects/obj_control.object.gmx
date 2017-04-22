@@ -32,6 +32,7 @@ global.mana = 5;
 global.luck = 10;
 global.crit = 5;
 global.critAtt = 22;
+global.meleeRange = 32;
 
 global.level = 1;
 global.maxHP = 40;
@@ -39,7 +40,7 @@ global.maxSP = 30;
 global.hpGen = 0;
 global.spGen = 0;
 global.sp = global.maxSP;
-global.xp = calculateTotalXP(0);
+global.xp = calculateTotalXP(200);
 global.maxXP = 10;
 global.gold = 0;
 global.dualWield = false;
@@ -73,6 +74,7 @@ openSkillWindow = false;
 openDetailStat = false;
 skill_init();
 skillCoordinate();
+enemyListInit();
 //setAllSkills(-1);
 global.useLighting = false;
 if(global.useLighting){

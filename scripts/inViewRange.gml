@@ -1,4 +1,4 @@
-///inViewRange(from,to,min,max)
+///inViewRange(from,to,angle)
 from = argument0;
 to = argument1;
 range = argument2;

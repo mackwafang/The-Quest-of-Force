@@ -73,7 +73,7 @@ switch(type){
             knockback(self,other,0,1);
             break;
 }
-damage = round(damage*other.dmg_mod*max(1,useSkill(19,1)));
+damage = max(1,round(damage*other.dmg_mod*max(1,useSkill(19,1))));
 with(instance_create(x+irandom_range(-16,16),y-32+irandom(8),obj_dmg_inc)){
     damage = string(other.damage);
     color = white;

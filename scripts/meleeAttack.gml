@@ -1,7 +1,7 @@
 ///meleeAttack(special)
 
 for(i = 0; i < instance_number(obj_enemy_parent); i++){
-    if(distance_to_object(instance_find(obj_enemy_parent,i)) < 48){
+    if(distance_to_object(instance_find(obj_enemy_parent,i)) < global.meleeRange){
         enemy[i] = instance_find(obj_enemy_parent,i);
         if(inViewRange(self,enemy[i],50)){
             with(enemy[i]){
