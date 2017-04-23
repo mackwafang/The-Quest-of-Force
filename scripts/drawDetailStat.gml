@@ -41,4 +41,7 @@ draw_text(320,128,"Crit. Damage: "+string(global.critAtt));
 draw_text(320,160,"Armour Pen.: +"+string(useSkill(19,1)*100)+"%");
 draw_text(320,192,"Movement: "+string(2+useSkill(41,1)));
 draw_text(320,256,"Special Attack#MP Cost: "+string(max(1,round(global.level/10)))+" MP");
+
+draw_sprite_ext(spr_drop_item,0,64,hv-96,4,4,0,white,1);
+draw_text(96,hv-96,string(global.gold));
 draw_set_colour(white);

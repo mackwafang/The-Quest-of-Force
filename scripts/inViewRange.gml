@@ -11,7 +11,7 @@ y2 = lengthdir_y(1,from.image_angle);
 adist = sqrt(sqr(x1)+sqr(y1));
 bdist = sqrt(sqr(x2)+sqr(y2));
 
-angle = arccos(dot_product(x1,y1,x2,y2)/(adist*bdist))*(180/pi);
+angle = arccos(dot_product(x1,y1,x2,y2)/max(1,adist*bdist))*(180/pi);
 
 if(angle < range) {
     return true;

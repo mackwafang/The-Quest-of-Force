@@ -50,6 +50,8 @@ weaponImage = spr_sword;
 hitInt = 0;
 skillActiveTime = 0;
 skillAmmo = 0;
+
+holder = 0; //Holder variable for any use
 light_init_point(256,white);
 light_set_height(2);
 </string>
@@ -179,7 +181,12 @@ if(mouse_check_button(mb_right)){
     if(fire &gt; 0){
         if(global.sp &gt;= mpReq){
             manaGen = -60;
-            fire -= 10-useSkill(42,1);            
+            if(global.class != 2) {
+                fire -= 10-useSkill(42,1);
+            }
+            else {
+                fire -= 15-useSkill(42,1);
+            }
             global.sp -= mpReq;
             if(global.class != 1){
                 with(instance_create(x,y,obj_force)){
@@ -262,17 +269,31 @@ if(global.class == 2){
     }
     if(global.skillCooldown[3] &gt; 600){
         var nearest = instance_nearest(x,y,obj_enemy_parent);
-        if(global.sp &gt;= 100){
+        holder = nearest;
+        if(global.sp &gt;= 10){
             if(distance_to_object(instance_nearest(x,y,obj_enemy_parent)) &lt; 64){
-                global.sp -= 100;
-                with(nearest){
+                global.sp -= 10;
+                with(instance_create(x,y,obj_force)) {
+                    direction = point_direction(x,y,other.holder.x,other.holder.y);
+                    speed = 20;
+                    isElectric = true;
+                    visible = false;
+                    dmg_mod = useSkill(31,1);
+                }
+                /*with(nearest){
                     damage = global.mana*useSkill(31,1);
                     totalDamage += damage;
                     addStatus(0,global.mana,5);
                     enemy_health -= damage;
                     bounce = true;
                     knockback(self,other,10,20);
-                }
+                    with(instance_create(x,y-32,obj_dmg_inc)){
+                        damage = string(other.damage);
+                        color = white;
+                        font = global.damage_font;
+                        size = 2;
+                    }
+                }*/
             }
         }
     }
@@ -286,57 +307,19 @@ for(i = 1; i &lt;= 4; i++){
         }
     }
 }
-</string>
-          </argument>
-        </arguments>
-      </action>
-    </event>
-    <event eventtype="4" ename="obj_enemy_force">
-      <action>
-        <libid>1</libid>
-        <id>603</id>
-        <kind>7</kind>
-        <userelative>0</userelative>
-        <isquestion>0</isquestion>
-        <useapplyto>-1</useapplyto>
-        <exetype>2</exetype>
-        <functionname></functionname>
-        <codestring></codestring>
-        <whoName>self</whoName>
-        <relative>0</relative>
-        <isnot>0</isnot>
-        <arguments>
-          <argument>
-            <kind>1</kind>
-            <string>if(other.canDamage){
-    if(other.allowPierce){ //peircing
-        if(!inArray(other.pierce,id)){
-            enemyDealDamage(other.dmg_type);
-            other.pierce[other.aIndex] = id;
-            ++other.aIndex;
-        }
+/****************** POTIONS *******************/
+if(keyboard_check_pressed(ord("Z"))) {
+    if(global.HPPotionCooldown &lt;= 0 &amp;&amp; global.HPPotion &gt; 0) {
+        global.HPPotion--;
+        heal(round(global.maxHP)*0.5,0);
+        global.HPPotionCooldown = 300;
     }
-    else if(other.multiHit){ //multiple hit
-        if(hitInt &lt; other.maxHitInt){ //Check interval
-            hitInt++; // increment
-        }
-        else{
-            hitInt = 0; //reset counter
-            if(other.hit &lt; other.maxHit){//increment total allowed hit
-                other.hit++;
-            }
-            else{
-                with(other) {instance_destroy();}
-            }
-            enemyDealDamage(other.dmg_type);
-            // deal damage
-        }
-    }
-    else{ //normal hit
-        enemyDealDamage(1);
-        with(other){
-            instance_destroy();
-        }
+}
+if(keyboard_check_pressed(ord("X"))) {
+    if(global.SPPotionCooldown &lt;= 0 &amp;&amp; global.SPPotion &gt; 0) {
+        global.SPPotion--;
+        heal(0,round(global.maxSP)*0.5);
+        global.SPPotionCooldown = 300;
     }
 }
 </string>
@@ -370,6 +353,60 @@ yoff=lengthdir_y(0.5,a);
 while(place_meeting(x,y,other)){
     x-=xoff;
     y-=yoff;
+}
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="4" ename="obj_enemy_force">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>if(other.canDamage){
+    knockback(self,other,0,1);
+    if(other.allowPierce){ //peircing
+        if(!inArray(other.pierce,id)){
+            enemyDealDamage(other.dmg_type);
+            other.pierce[other.aIndex] = id;
+            ++other.aIndex;
+        }
+    }
+    else if(other.multiHit){ //multiple hit
+        if(hitInt &lt; other.maxHitInt){ //Check interval
+            hitInt++; // increment
+        }
+        else{
+            hitInt = 0; //reset counter
+            if(other.hit &lt; other.maxHit){//increment total allowed hit
+                other.hit++;
+            }
+            else{
+                with(other) {instance_destroy();}
+            }
+            enemyDealDamage(other.dmg_type);
+            // deal damage
+        }
+    }
+    else{ //normal hit
+        enemyDealDamage(1);
+        with(other){
+            instance_destroy();
+        }
+    }
 }
 </string>
           </argument>

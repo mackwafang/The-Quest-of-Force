@@ -34,6 +34,7 @@ weaponImage = spr_staff;
 stam = round(3*sin(level)+(3*level));
 mana = stam+6;
 enemy_max_health = round(15*cos(level)+(20*level));
+goldDrop = (level div 5)+global.luck;
 minSpotFov = 30;
 minSpotRange = 128;
 maxSpotFov = 70;

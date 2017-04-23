@@ -55,7 +55,7 @@ switch(key){
                     if(global.skillCooldown[3] == 0){
                         global.sp -= mpUse;
                         global.skillCooldown[3] = global.skillMaxCooldown[3];
-                        for(var i = 0; i < 8; i++){
+                        for(var i = 0; i < 10; i++){
                             with(instance_create(x,y,obj_force)){
                                 speed = 3;
                                 direction = irandom(360);
@@ -64,6 +64,7 @@ switch(key){
                                 homePlayerOrder = irandom_range(1,4);
                                 dmg_mod = 1;
                                 multiHit = true;
+                                destroyWhenOut = false;
                                 hitInt = maxHitInt;
                                 maxHit = 100;
                                 image_xscale = 2;

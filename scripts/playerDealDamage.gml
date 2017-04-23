@@ -1,10 +1,12 @@
 ///playerDealDamage(type,special)
 var type = argument0;
 var special = argument1;
+var isCrit = false;
 totalFade = 5;
 switch(type){
     case 0: if(irandom(99) < global.crit){
                 damage = global.str+global.critAtt;
+                isCrit = true;
                 totalCrit = 5;
             }
             else{
@@ -30,10 +32,11 @@ switch(type){
                     }
                 }
             }
-            damage -= stam div 10;
+            damage -= stam div 5;
             break;
     case 1: if(irandom(99) < global.crit){
                 damage = max(global.mana+global.critAtt,1);
+                isCrit = true;
                 totalCrit = 5;
             }
             else{
@@ -69,22 +72,34 @@ switch(type){
                     }
                 }
             }
-            damage -= mana div 10;
+            damage -= mana div 5;
             knockback(self,other,0,1);
             break;
 }
 damage = max(1,round(damage*other.dmg_mod*max(1,useSkill(19,1))));
-with(instance_create(x+irandom_range(-16,16),y-32+irandom(8),obj_dmg_inc)){
-    damage = string(other.damage);
-    color = white;
-    font = global.damage_font;
-    size = 2;
-}
 if(global.class == 1){
     if(global.skillCooldown[0] > 60){
         damage = round(damage*useSkill(24,1));
     }
 }
+if(!isCrit) {
+    with(instance_create(x,y-32,obj_dmg_inc)){
+        damage = string(other.damage);
+        color = white;
+        font = global.damage_font;
+        size = 2;
+    }
+}
+else {
+    with(instance_create(x,y-32,obj_dmg_inc)){
+        damage = string(other.damage);
+        color = orange;
+        wait = -30;
+        font = global.damage_font;
+        size = 3;
+    }
+}
+/*
 if(damage > enemy_max_health){
     with(instance_create(x,y-32,obj_dmg_inc)){
         damage = "Overkill#x"+string((other.damage/other.enemy_max_health)*100);
@@ -93,6 +108,7 @@ if(damage > enemy_max_health){
         font = global.damage_font;
         size = 3;
     }
-}
+}*/
 enemy_health -= damage;
 totalDamage += damage;
+return 0;

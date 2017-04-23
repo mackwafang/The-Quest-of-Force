@@ -1,3 +1,7 @@
 ///heal(HP,SP)
-health = argument0;
-global.sp = argument1;
+if(health < global.maxHP) {
+    health += argument0;
+}
+if(global.sp < global.maxSP) {
+    global.sp += argument1;
+}

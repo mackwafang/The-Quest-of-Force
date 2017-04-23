@@ -33,6 +33,7 @@ partType = -1;
 
 dmg_mod = 1;
 dmg_type = 1;
+dmg_mod_increase = 0;
 
 bounce = false;
 destroyOnWall = true;
@@ -87,12 +88,20 @@ homePlayerOrder = 1;
           <argument>
             <kind>1</kind>
             <string>if(global.class == 0 || global.class == 2){
-    part_type_direction(partType,0,360,0,0);
-    part_type_speed(partType,0.1,0.3,0,0);
-    part_type_life(partType,30,30);
-    repeat(10) part_particles_create(partSystem,x,y,partType,1);
-    part_type_speed(partType,0,0,0,0);
-    part_type_life(partType,15,15);
+    if(x &gt; view_xview[0] &amp;&amp; x &lt; view_wview[0]) {
+        if(y &gt; view_yview[0] &amp;&amp; y &lt; view_hview[0]) {
+            /*if(isElectric) {
+                part_type_shape(partType,pt_shape_spark);
+                part_type_scale(partType,0.2,0.2);
+            }*/
+            part_type_direction(partType,0,360,0,0);
+            part_type_speed(partType,0.1,0.3,0,0);
+            part_type_life(partType,30,30);
+            repeat(10) part_particles_create(partSystem,x,y,partType,1);
+            part_type_speed(partType,0,0,0,0);
+            part_type_life(partType,15,15);
+        }
+    }
 }
 </string>
           </argument>
@@ -186,21 +195,29 @@ if(homePlayer){
     var yy = (y2+y1)-y;
     
     direction = direction_wipe(direction,point_direction(x,y,xx,yy),homePlayerOrder);
-    speed = var_wipe(speed,3,100,0.3,0);
+    speed = var_wipe(speed,sqrt(sqr(xx)+sqr(yy))/75,100,0.5,0);
     target = instance_nearest(x,y,obj_enemy_parent);
     if(distance_to_object(target) &lt; 128) {
         if(fire &gt; 0) {
-            fire -= 8;
+            if(global.skillCooldown[0] &gt; 60) {
+                fire -= 2;
+            }
+            else {
+                fire -= 8;
+            }
             with(instance_create(x,y,obj_force)) {
                 direction = point_direction(x,y,other.target.x,other.target.y);
-                dmg_mod = 0.05
-                if(global.skillCooldown[0] &gt; 60) {dmg_mod += useSkill(20,1);}
+                dmg_mod = 0.1;
+                destroyWhenOut = false;
+                if(global.skillCooldown[0] &gt; 60) {dmg_mod = 0.1*useSkill(20,1);}
+                dmg_mod += other.dmg_mod_increase;
                 speed = 10;
             }
+            dmg_mod_increase += 0.02;
         }
-        if(distance_to_object(target) &lt; 32) {
+        /*if(distance_to_object(target) &lt; 32) {
             direction = direction_wipe(direction,point_direction(x,y,target.x,target.y),5);
-        }
+        }*/
     }
     /*if(distance_to_object(obj_player) &gt; 64){
         direction = direction_wipe(direction,point_direction(x,y,obj_player.x,obj_player.y),5);
@@ -247,6 +264,10 @@ alarm[0] = 1;
             partType = global.fireballType;
         }
     }
+    else {
+        partSystem = global.electricSystem;
+        partType = global.electricType;
+    }
 }
 else if(global.class == 0){
     partSystem = global.forceSystem;
@@ -262,6 +283,9 @@ if(hit &gt;= maxHit) {instance_destroy();}
 if(global.class == 2 &amp;&amp; !isHeal){
     if(x &lt; room_width || x &gt; 0){
         if(y &lt; room_height || y &gt; 0){
+            if(isElectric) {
+                part_type_orientation(partType,direction,direction,0,10,false);
+            }
             part_particles_create(partSystem,x,y,partType,1);
         }
     }
@@ -304,6 +328,30 @@ else{
 else if(destroyOnWall){
     instance_destroy();
 }
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="4" ename="obj_enemy_force">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>if(!isHeal) {instance_destroy();}
+with(other) {instance_destroy();}
 </string>
           </argument>
         </arguments>

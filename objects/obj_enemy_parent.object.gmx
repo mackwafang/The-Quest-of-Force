@@ -28,6 +28,7 @@
             <string>event_inherited();
 image_speed = 0;
 friction = 0.1;
+moveSpeed = 1;
 level = 1;
 str = 0;
 stam = 0;
@@ -36,6 +37,7 @@ luck = 0;
 critRate = 0;
 critDamage = 0;
 expGain = level;
+goldDrop = 0;
 damage = 0;
 totalDamage = 0;
 totalFade = 0;
@@ -177,7 +179,7 @@ image_angle = direction;
 if(canMove &amp;&amp; place_free(goX,goY)){
     if(point_distance(x,y,goX,goY) &gt; 10){
         direction = point_direction(x,y,goX,goY);
-        speed = 1;
+        speed = moveSpeed;
     }
     else{
         repeat(2) ds_queue_dequeue(coordinates);
@@ -189,6 +191,7 @@ if(enemy_health &lt;= 0){
     enemy_health = 0;
     global.xp += expGain;
     sendSystemMessage("+"+string(expGain)+" XP");
+    dropGold(goldDrop);
     /*with(instance_create(x,y-25,obj_dmg_inc)){
         damage = other.totalDamage;
         wait = -60;
@@ -257,11 +260,12 @@ for(i = 0; i &lt; 10; i++){
 }
 knockbackPerform();
 if(instance_exists(obj_player)) {target = obj_player;}
+/***************** MELEE ATTACK ****************/
 if(equipWeapon) {
     if(fire &gt; 0) {
         if(distance_to_object(target) &lt; 32) {
             if(inViewRange(self,target,45)) {
-                fire -= 20;
+                fire -= 40;
                 weaponSide *= -1;
                 knockback(target,self,1,2);
                 enemyDealDamage(0);
@@ -307,16 +311,16 @@ switch(alert){
             if(kbTime == 0){
                 if(object_index != obj_enemy_wizard) {
                     direction = point_direction(x,y,target.x,target.y);
-                    speed = 1;
+                    speed = moveSpeed;
                 }
                 else {
                     if(distance_to_object(target) &gt; 128) {
                         direction = point_direction(x,y,target.x,target.y);
-                        speed = 1;
+                        speed = moveSpeed/2;
                     }
                     else {
                         if(fire &gt; 0) {
-                            fire -= 20;
+                            fire -= 40;
                             with(instance_create(x,y,obj_enemy_force)) {
                                 direction = point_direction(x,y,other.target.x,other.target.y);
                                 speed = 4;
@@ -358,6 +362,30 @@ switch(alert){
           <argument>
             <kind>1</kind>
             <string>move_contact_solid(direction,speed+10);
+speed = 0;
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="4" ename="obj_enemy_parent">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>move_contact_all(direction,12);
 speed = 0;
 </string>
           </argument>
@@ -519,13 +547,13 @@ if(alert != 0) {
 */
 
 draw_text_colour(xx,yy-26,"Lv."+string(level),white,white,white,white,1);
-//draw_set_alpha(min((-point_distance(x,y,mouse_x,mouse_y)/(useSkill(52,1)+1))+1,1));
+draw_set_alpha(min((-point_distance(x,y,mouse_x,mouse_y)/64)+1,1));
 draw_rectangle_colour(xx-20,yy-16,xx+20,yy-26,0,0,0,0,false);
 draw_rectangle_colour(xx-18,yy-18,xx-18+(healthShow/100)*36,yy-24,red,red,red,red,false);
 draw_rectangle_colour(xx-18,yy-18,xx-18+((enemy_health/enemy_max_health)*36),yy-24,green,green,green,green,false);
 draw_set_valign(fa_top);
 draw_set_halign(fa_center);
-//draw_set_alpha(1);
+draw_set_alpha(1);
 draw_set_font(global.damage_font);
 //draw_text_transformed_colour(xx,yy-40,totalDamage,min(2,totalCrit),min(2,totalCrit),0,white,white,white,white,totalFade);
 </string>
@@ -553,7 +581,7 @@ draw_set_font(global.damage_font);
             <string>draw_self();
 if(equipWeapon) {
     var weapon_x, weapon_y;
-    weaponAngle = direction_wipe(weaponAngle,image_angle-(fire*weaponSide*20)-20,50);
+    weaponAngle = direction_wipe(weaponAngle,image_angle-(max(-20,fire)*weaponSide*20)-20,50);
     weapon_x = lengthdir_x(8,image_angle);
     weapon_y = lengthdir_y(8,image_angle);
     draw_sprite_ext(weaponImage,0,x+weapon_x,y+weapon_y,weaponSide,1,weaponAngle,white,1);

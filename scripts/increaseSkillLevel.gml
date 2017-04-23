@@ -40,12 +40,6 @@ if(global.skill[skill,0] < global.skill[skill,1]){ // If skill level is not maxe
         }
     }
     if(skill == 36) {global.crit += useSkill(skill,3);}
-    if(skill == 37 || skill == 38){
-        if(global.skill[skill,0] == 1)
-            global.critAtt += useSkill(skill,1);
-        else
-            global.critAtt += useSkill(skill,3);
-    }
     if(skill == 50) {global.skill[48,6] = 12+useSkill(skill,1);}
     if(skill == 51) {global.skill[49,6] = 12+useSkill(skill,1);}
     global.skill[skill,5] += global.skill[skill,7]; //Increment primary effect
