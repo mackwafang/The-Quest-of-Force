@@ -19,7 +19,7 @@ switch(type){
             else {
                 obj_player.damage = other.damage;
             }
-            obj_player.damage -= global.mana div 10;
+            obj_player.damage -= (global.mana+global.stam) div 10;
             break;
 }
 if(isCrit) {

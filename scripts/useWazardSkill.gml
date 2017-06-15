@@ -10,6 +10,7 @@ switch(key){
                         global.skillCooldown[0] = global.skillMaxCooldown[0]; //Start CD
                         with(instance_create(x,y,obj_force)){
                             visible = true;
+                            dmg_mod = 1+(useSkill(28,1)/100);
                             sprite_index = spr_magic_circle;
                             image_xscale = 0;
                             image_yscale = 0;

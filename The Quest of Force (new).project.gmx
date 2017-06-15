@@ -9,8 +9,10 @@
     <sprite>sprites\spr_player</sprite>
     <sprite>sprites\spr_enemy</sprite>
     <sprite>sprites\spr_force</sprite>
+    <sprite>sprites\spr_arrow</sprite>
     <sprite>sprites\spr_sword</sprite>
     <sprite>sprites\spr_staff</sprite>
+    <sprite>sprites\spr_bow</sprite>
     <sprite>sprites\spr_damage_font</sprite>
     <sprite>sprites\spr_wall</sprite>
     <sprite>sprites\spr_critical</sprite>
@@ -34,6 +36,9 @@
     <sprite>sprites\spr_skill_usable</sprite>
     <sprite>sprites\spr_potions</sprite>
     <sprite>sprites\spr_drop_item</sprite>
+    <sprite>sprites\spr_buy_button</sprite>
+    <sprite>sprites\spr_buffs</sprite>
+    <sprite>sprites\spr_buff_font</sprite>
   </sprites>
   <backgrounds name="background">
     <background>background\bkg_grass</background>
@@ -44,7 +49,6 @@
     <script>scripts\direction_wipe.gml</script>
     <script>scripts\isBetween.gml</script>
     <script>scripts\print.gml</script>
-    <script>scripts\mouseHover.gml</script>
     <script>scripts\inViewRange.gml</script>
     <script>scripts\playerDealDamage.gml</script>
     <script>scripts\enemyDealDamage.gml</script>
@@ -55,6 +59,7 @@
     <script>scripts\useForceMasterSkill.gml</script>
     <script>scripts\useSwordmanSkill.gml</script>
     <script>scripts\useWazardSkill.gml</script>
+    <script>scripts\useMarksmanSkill.gml</script>
     <script>scripts\skillCoordinate.gml</script>
     <script>scripts\drawSkill.gml</script>
     <script>scripts\drawDetailStat.gml</script>
@@ -114,7 +119,14 @@
     <script>scripts\enemyListInit.gml</script>
     <script>scripts\increaseBasicStats.gml</script>
     <script>scripts\dropGold.gml</script>
+    <script>scripts\getSkillData.gml</script>
+    <script>scripts\isSkillMax.gml</script>
+    <script>scripts\addBuffList.gml</script>
+    <script>scripts\buffListLength.gml</script>
   </scripts>
+  <shaders name="shaders">
+    <shader type="GLSLES">shaders\shd_motionBlur.shader</shader>
+  </shaders>
   <objects name="objects">
     <object>objects\obj_kinetic</object>
     <object>objects\obj_player</object>
@@ -131,6 +143,7 @@
     <object>objects\obj_maze_gen</object>
     <object>objects\obj_room_decor</object>
     <object>objects\obj_drop_item</object>
+    <object>objects\obj_shop</object>
   </objects>
   <rooms name="rooms">
     <room>rooms\room2</room>
@@ -138,8 +151,8 @@
   </rooms>
   <constants number="11">
     <constant name="null">undefined</constant>
-    <constant name="windowYRatio">view_hport[0]/view_hview[0]</constant>
-    <constant name="windowXRatio">view_wport[0]/view_wview[0]</constant>
+    <constant name="windowYRatio">view_wport[0]/view_wview[0]</constant>
+    <constant name="windowXRatio">view_hport[0]/view_hview[0]</constant>
     <constant name="yellow">c_yellow</constant>
     <constant name="orange">c_orange</constant>
     <constant name="white">c_white</constant>

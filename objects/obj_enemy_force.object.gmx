@@ -37,7 +37,7 @@ dmg_type = 1;
 bounce = false;
 destroyOnWall = true;
 specialAttack = false;
-deleteWhenOut = true;
+destroyWhenOut = true;
 allowPierce = false;
 maxPierce = 15;
 aIndex = 0;
@@ -324,7 +324,7 @@ else if(destroyOnWall){
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if(deleteWhenOut){
+            <string>if(destroyWhenOut){
     instance_destroy();
 }
 </string>

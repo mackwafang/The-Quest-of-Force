@@ -5,6 +5,6 @@ var finalLevel = argument[0];
 for(i = 1; i < finalLevel; i++){
     count += newValue;
     //newValue = ceil(newValue*1.5);
-    newValue = ceil(i*20);
+    newValue = ceil(i*100);
 }
 return count;

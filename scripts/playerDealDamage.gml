@@ -3,6 +3,7 @@ var type = argument0;
 var special = argument1;
 var isCrit = false;
 totalFade = 5;
+damage += other.damage;
 switch(type){
     case 0: if(irandom(99) < global.crit){
                 damage = global.str+global.critAtt;
@@ -16,6 +17,9 @@ switch(type){
                 if(global.skillCooldown[1] > 300){
                     damage += global.mana;
                 }
+            }
+            if(global.class == 1) {
+                knockback(self,other,3,3);
             }
             if(!special){
                 if(global.skill[49,0] > 0){
@@ -58,6 +62,31 @@ switch(type){
                     }
                 }
             }
+            if(global.class == 0) {
+                if(global.skillCooldown[1] > 300) {
+                    if(global.skill[21,skillData.level] == global.skill[21,skillData.maxLevel]) {
+                        health += max(1,round(damage*0.01));
+                        if(instance_exists(obj_player)){
+                            with(instance_create(obj_player.x,obj_player.y-32,obj_dmg_inc)){
+                                damage = round(other.damage*0.01);
+                                wait = 0;
+                                color = green;
+                                font = global.damage_font;
+                                size = 2;
+                            }
+                        }
+                        global.sp += max(1,round(damage*0.01));
+                        if(instance_exists(obj_player)){
+                            with(instance_create(obj_player.x,obj_player.y-16,obj_dmg_inc)){
+                                damage = round(other.damage*0.01);
+                                color = aqua;
+                                font = global.damage_font;
+                                size = 2;
+                            }
+                        }
+                    }
+                }
+            }
             if(global.class == 2){
                 if(!other.useIce){
                     if(irandom(4) < 1){
@@ -72,7 +101,7 @@ switch(type){
                     }
                 }
             }
-            damage -= mana div 5;
+            damage -= (mana+stam) div 5;
             knockback(self,other,0,1);
             break;
 }

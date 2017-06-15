@@ -27,18 +27,21 @@
             <kind>1</kind>
             <string>isElectric = false;
 useIce = false;
+addTrail = false;
 partSystem = -1;
 partType = -1;
 
-
+damage = 0;
 dmg_mod = 1;
 dmg_type = 1;
 dmg_mod_increase = 0;
+maxSize = 5;
 
+onFire = false;
 bounce = false;
 destroyOnWall = true;
 specialAttack = false;
-deleteWhenOut = true;
+destroyWhenOut = true;
 allowPierce = false;
 maxPierce = 15;
 aIndex = 0;
@@ -195,25 +198,28 @@ if(homePlayer){
     var yy = (y2+y1)-y;
     
     direction = direction_wipe(direction,point_direction(x,y,xx,yy),homePlayerOrder);
-    speed = var_wipe(speed,sqrt(sqr(xx)+sqr(yy))/75,100,0.5,0);
+    speed = 3;
+    //speed = var_wipe(speed,sqrt(sqr(xx)+sqr(yy))/75,100,0.5,0);
+    if(instance_exists(obj_enemy_parent)) {
     target = instance_nearest(x,y,obj_enemy_parent);
-    if(distance_to_object(target) &lt; 128) {
         if(fire &gt; 0) {
             if(global.skillCooldown[0] &gt; 60) {
-                fire -= 2;
+                fire -= 4;
             }
             else {
                 fire -= 8;
             }
             with(instance_create(x,y,obj_force)) {
                 direction = point_direction(x,y,other.target.x,other.target.y);
-                dmg_mod = 0.1;
+                dmg_mod = 0.2;
                 destroyWhenOut = false;
                 if(global.skillCooldown[0] &gt; 60) {dmg_mod = 0.1*useSkill(20,1);}
-                dmg_mod += other.dmg_mod_increase;
-                speed = 10;
+                if(global.skillCooldown[1] &gt; 300) {
+                    allowPierce = true;
+                    maxPierce = 2;
+                }
+                speed = 5;
             }
-            dmg_mod_increase += 0.02;
         }
         /*if(distance_to_object(target) &lt; 32) {
             direction = direction_wipe(direction,point_direction(x,y,target.x,target.y),5);
@@ -252,24 +258,26 @@ alarm[0] = 1;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if(global.class == 2){
-    if(!isElectric){
-        if(useIce){
-            partSystem = global.iceSystem;
-            partType = global.iceType
+            <string>if (global.class == 3) {
+    sprite_index = spr_arrow;
+    if (global.skillCooldown[1] &gt; 300) {image_index = 1;} else {image_index = 0;}
+}
+if(!isElectric){
+    if(useIce){
+        partSystem = global.iceSystem;
+        partType = global.iceType
 
-        }
-        else{
-            partSystem = global.fireballSystem;
-            partType = global.fireballType;
-        }
     }
-    else {
-        partSystem = global.electricSystem;
-        partType = global.electricType;
+    else{
+        partSystem = global.fireballSystem;
+        partType = global.fireballType;
     }
 }
-else if(global.class == 0){
+else {
+    partSystem = global.electricSystem;
+    partType = global.electricType;
+}
+if(global.class == 0) {
     partSystem = global.forceSystem;
     partType = global.forceType;
 }
@@ -277,6 +285,9 @@ if(speedUp){
     if(speed &lt; maxSpeed){
         speed *= speedingRate;
     }
+}
+if(addTrail) {
+    part_particles_create(partSystem,x,y,partType,1);
 }
 if(aIndex == maxPierce) {instance_destroy();}
 if(hit &gt;= maxHit) {instance_destroy();}
@@ -292,7 +303,7 @@ if(global.class == 2 &amp;&amp; !isHeal){
 }
 if(isHeal) {
     image_angle++;
-    if(image_xscale &lt; 5 &amp;&amp; image_yscale &lt; 5){
+    if(image_xscale &lt; maxSize &amp;&amp; image_yscale &lt; maxSize){
         image_xscale += 0.1;
         image_yscale += 0.1;
     }
@@ -374,7 +385,7 @@ with(other) {instance_destroy();}
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if(deleteWhenOut){
+            <string>if(destroyWhenOut){
     instance_destroy();
 }
 </string>

@@ -25,14 +25,29 @@
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>global.class = 0;
+            <string>enum skillData {
+    level = 0,
+    maxLevel = 1,
+    requiredLevel = 2,
+    preReq = 3,
+    info = 4,
+    primaryEffect = 5,
+    secondaryEffect = 6,
+    increaseEffect = 7
+}
+
+global.gridSize = 16;
+global.grid = mp_grid_create(0,0,room_width div global.gridSize,room_height div global.gridSize,global.gridSize,global.gridSize);
+mp_grid_add_instances(global.grid,obj_wall,false);
+
+global.class = 1;
 global.str = 10;
 global.stam = 10;
 global.mana = 5;
 global.luck = 10;
 global.crit = 5;
 global.critAtt = 22;
-global.meleeRange = 32;
+global.meleeRange = 40;
 
 global.level = 1;
 global.maxHP = 40;
@@ -40,7 +55,7 @@ global.maxSP = 30;
 global.hpGen = 0;
 global.spGen = 0;
 global.sp = global.maxSP;
-global.xp = calculateTotalXP(0);
+global.xp = calculateTotalXP(50);
 global.maxXP = 10;
 global.gold = 0;
 global.HPPotion = 5;
@@ -53,6 +68,9 @@ global.game_font = font_add_sprite(spr_game_font,ord(" "),true,0);
 global.skillNumberFont = font_add_sprite(spr_skill_level_required,ord("0"),false,0);
 guiFont = font_add_sprite(spr_gui_font,ord("!"),true,0);
 skillFont = font_add_sprite(spr_skill_font,ord(" "),true,2);
+statFont = font_add_sprite(spr_stat_font,ord(" "),true,0);
+buffFont = font_add_sprite(spr_buff_font,ord(" "),true,0);
+/********************* SKILLS ******************/
 global.skillCooldown[0] = 0;
 global.skillCooldown[1] = 0;
 global.skillCooldown[2] = 0;
@@ -73,6 +91,25 @@ for(var i = 0; i &lt; 4; i++) {
     skillAnimation[i,0] = false;
     skillAnimation[i,1] = 0;
 }
+for (var i = 0; i &lt; 4; i++) {
+    hotbarSurface[i] = surface_create(64,64);
+}
+/********************* BUFF ******************/
+enum buffListData {
+    name = 0,
+    sprite = 1,
+    description = 2,
+    time = 3
+}
+buffListSize = 30;
+for (var i = 0; i &lt; buffListSize; i ++) {
+    buffList[i,buffListData.name] = "";
+    buffList[i,buffListData.sprite] = -1;
+    buffList[i,buffListData.description] = "";
+    buffList[i,buffListData.time] = 0;
+    addBuffList("AYYY LMAO",0,"420 BLAZIT",irandom(12)*60);
+}
+/********************* MESSAGE ******************/
 systemMessageTimer = 0;
 systemStartFade = false;
 systemMoveUp = 0;
@@ -83,6 +120,8 @@ openDetailStat = false;
 skill_init();
 skillCoordinate();
 enemyListInit();
+increaseSkillLevel(20+(global.class*4));
+global.skillPoints++;
 //setAllSkills(-1);
 global.useLighting = false;
 if(global.useLighting){
@@ -93,7 +132,6 @@ if(global.useLighting){
     lightmap_set_ambient(0);
 }
 display_set_gui_size(view_wport,view_hport);
-statFont = font_add_sprite(spr_stat_font,ord("0"),true,0);
 healthMove = 0;
 spMove = 0;
 xpMove = 0;
@@ -122,14 +160,37 @@ test = 0;
           <argument>
             <kind>1</kind>
             <string>room_speed = 60;
-healthMove = (health/global.maxHP)*100;//var_wipe(healthMove,health,global.maxHP,0,0.5);
-spMove = (global.sp/global.maxSP)*100;//var_wipe(spMove,global.sp,global.maxSP,0,0.5);
+if(keyboard_check_pressed(vk_space)) {
+    instance_deactivate_all(true);
+}
+healthMove = var_wipe(healthMove,health,global.maxHP,0,0.5);
+spMove = var_wipe(spMove,global.sp,global.maxSP,0,0.5);
 xpMove = var_wipe(xpMove,global.xp,global.maxXP,0.2,0);
 global.sp = clamp(global.sp,0,global.maxSP);
 health = clamp(health,0,global.maxHP);
-global.hpGen = min(100,global.stam div 5)+useSkill(39,1)+useSkill(40,1)+useSkill(47,1);
-global.spGen = min(100,global.mana div 5)+useSkill(16,1)+useSkill(17,1)+useSkill(18,1);
+global.hpGen = 0.1+min(100,global.stam div 5)+useSkill(39,1)+useSkill(40,1)+useSkill(47,1);
+global.spGen = 0.1+min(100,global.mana div 5)+useSkill(16,1)+useSkill(17,1)+useSkill(18,1);
 global.critAtt = useSkill(37,1)+useSkill(38,1)+((global.str+global.mana) div 20);
+
+for (var k = 0; k &lt; instance_number(obj_enemy_parent); k ++) {
+    var enemy = instance_find(obj_enemy_parent,k);
+    var xx = enemy.x div global.gridSize;
+    var yy = enemy.y div global.gridSize;
+    enemy.prevX = xx;
+    enemy.prevY = yy;
+    if (mp_grid_get_cell(global.grid,xx,yy) != -1) {
+        mp_grid_add_cell(global.grid,xx,yy);
+    }
+}
+for (var j = 0; j &lt; room_height div global.gridSize; j++) {
+    for (var i = 0; i &lt; room_width div global.gridSize; i++) {
+        if (mp_grid_get_cell(global.grid,i,j) == -1) {
+            if (!collision_rectangle(i*global.gridSize,j*global.gridSize,(i+1)*global.gridSize,(j+1)*global.gridSize,obj_kinetic,false,false)) {
+                mp_grid_clear_cell(global.grid,i,j);
+            }
+        }
+    }
+}
 /*if(keyboard_check_pressed(vk_left)){
     room = global.dungeonRooms[--global.currentRoomX,global.currentRoomY];
 }
@@ -142,6 +203,28 @@ if(keyboard_check_pressed(vk_up)){
 if(keyboard_check_pressed(vk_down)){
     room = global.dungeonRooms[global.currentRoomX,++global.currentRoomY];
 }
+/******************* Buff list ******************/
+for (var i = 0; i &lt; buffListSize; i++) {
+    if (buffList[i,buffListData.time] &gt; 0) {
+        buffList[i,buffListData.time]--; //Decrease timer
+    }
+    else {
+        //Overwrite with other buffs
+        for (var j = i; j &lt; buffListSize; j++) {
+            if (j &lt; buffListSize-1) {
+                for (var k = 0; k &lt; array_length_2d(buffList,j); k ++) {
+                    buffList[j,k] = buffList[j+1,k];
+                }
+            }
+            else {
+                buffList[j,buffListData.name] = "";
+                buffList[j,buffListData.sprite] = -1;
+                buffList[j,buffListData.description] = "";
+                buffList[j,buffListData.time] = 0;
+            }
+        }
+    }
+}
 /******************* Skill Cooldown ******************/
 for(i = 0; i &lt; 4; i++){
     if(global.skillCooldown[i] &gt; 0){
@@ -151,8 +234,8 @@ for(i = 0; i &lt; 4; i++){
         }
     }
     if(skillAnimation[i,0]) {
-        if(skillAnimation[i,1] &lt; 40) {
-            skillAnimation[i,1]++;
+        if(skillAnimation[i,1] &lt; 100) {
+            skillAnimation[i,1] += 2;
         }
         else {
             skillAnimation[i,0] = false;
@@ -193,7 +276,7 @@ if(keyboard_check_pressed(ord("T"))){
 if(global.xp &gt;= global.maxXP){
     global.level++;
     global.xp -= global.maxXP;
-    global.maxXP = ceil(global.level*20);
+    global.maxXP = ceil(90*power(global.level,0.8));
     sendSystemMessage("Level "+string(global.level)+" achieved!");
     for(i = 0; i &lt; array_height_2d(global.skill); i++){
         if(global.level == global.skill[i,2]){
@@ -203,19 +286,19 @@ if(global.xp &gt;= global.maxXP){
     }
     global.skillPoints ++;
     switch(global.class){
-        case 0: increaseBasicStats(2,2,2,2)
+        case 0: increaseBasicStats(2,2,2,2);
                 increaseHPSP(10,10);
                 break;
-        case 1: increaseBasicStats(3,3,1,1)
+        case 1: increaseBasicStats(4,3,1,1);
                 increaseHPSP(20,0);
                 break;
-        case 2: increaseBasicStats(0,1,4,2)
+        case 2: increaseBasicStats(0,1,4,2);
                 increaseHPSP(5,15);
                 break;
-        case 3: increaseBasicStats(2,1,1,4)
+        case 3: increaseBasicStats(2,1,1,4);
                 increaseHPSP(10,10);
                 break;
-        case 4: increaseBasicStats(2,2,2,2)
+        case 4: increaseBasicStats(2,2,2,2);
                 increaseHPSP(15,5);
                 break;
     }
@@ -264,23 +347,63 @@ draw_rectangle_colour(0,hv-36,wv,hv,0,0,0,0,false);
 draw_set_font(global.skillNumberFont);
 draw_set_valign(fa_middle);
 draw_set_halign(fa_left);
+
 draw_primitive_begin(pr_trianglefan);
-draw_set_colour(red);
+draw_set_colour(orange);
 draw_vertex(0,hv-32);
-draw_vertex((healthMove*5.12),hv-32);
-draw_vertex((healthMove*5.12)-32,hv-12);
+if(round((health/global.maxHP)*100) &lt; round(healthMove)) {
+    draw_vertex((healthMove*5.12),hv-32);
+    draw_vertex((healthMove*5.12)-32,hv-12);
+    draw_vertex(0,hv-12);
+    draw_set_colour(white);
+    draw_set_colour(red);
+    draw_vertex(0,hv-32);
+    draw_vertex((health/global.maxHP)*512,hv-32);
+    draw_vertex(((health/global.maxHP)*512)-32,hv-12);
+}
+else {
+    draw_vertex((health/global.maxHP)*512,hv-32);
+    draw_vertex(((health/global.maxHP)*512)-32,hv-12);
+    draw_vertex(0,hv-12);
+    draw_set_colour(white);
+    draw_set_colour(red);
+    draw_vertex(0,hv-32);
+    draw_vertex((healthMove*5.12),hv-32);
+    draw_vertex((healthMove*5.12)-32,hv-12);
+}
 draw_vertex(0,hv-12);
 draw_set_colour(white);
 draw_primitive_end();
+
+
 draw_text_transformed_colour(5,hv-22,string(round(health)),1.5,1.5,0,white,white,white,white,1);
 /******************* SP ******************/
 draw_set_valign(fa_middle);
 draw_set_halign(fa_right);
 draw_primitive_begin(pr_trianglefan);
-draw_set_colour(aqua);
+draw_set_colour(blue);
 draw_vertex(wv,hv-32);
-draw_vertex(wv-(spMove*5.12),hv-32);
-draw_vertex(wv-(spMove*5.12)+32,hv-12);
+if(round((global.sp/global.maxSP)*100) &lt; round(spMove)) {
+    draw_vertex(wv-(spMove*5.12),hv-32);
+    draw_vertex(wv-(spMove*5.12)+32,hv-12);
+    draw_vertex(wv,hv-12);
+    draw_set_colour(white);
+    draw_set_colour(aqua);
+    draw_vertex(wv,hv-32);
+    draw_vertex(wv-((global.sp/global.maxSP)*512),hv-32);
+    draw_vertex(wv-((global.sp/global.maxSP)*512)+32,hv-12);
+    draw_vertex(wv,hv-12);
+}
+else {
+    draw_vertex(wv-((global.sp/global.maxSP)*512),hv-32);
+    draw_vertex(wv-((global.sp/global.maxSP)*512)+32,hv-12);
+    draw_vertex(wv,hv-12);
+    draw_set_colour(white);
+    draw_set_colour(aqua);
+    draw_vertex(wv,hv-32);
+    draw_vertex(wv-(spMove*5.12),hv-32);
+    draw_vertex(wv-(spMove*5.12)+32,hv-12);
+}
 draw_vertex(wv,hv-12);
 draw_set_colour(white);
 draw_primitive_end();
@@ -310,6 +433,7 @@ draw_set_valign(fa_center);
 draw_set_halign(fa_right);
 draw_text_colour(wv-32,hv-80,global.mana,white,white,white,white,1);
 draw_text_colour(wv-32,hv-48,global.luck,white,white,white,white,1);
+draw_set_font(statFont);
 /******************* ATTACK SKILL******************/
 for(var i = 0; i &lt; 4; i++){
     var skillX, skillY, skillID;
@@ -332,11 +456,18 @@ for(var i = 0; i &lt; 4; i++){
         draw_set_alpha(1);
         draw_set_valign(fa_center);
         draw_set_halign(fa_middle);
-        draw_text_colour(skillX+32,skillY+32,global.skillCooldown[i] div 60,white,white,white,white,1);
+        var skillTimer;
+        if(global.skillCooldown[i] div 60 &gt;= 10) { 
+            skillTimer = global.skillCooldown[i] div 60;
+        }
+        else {
+            skillTimer = string_format(global.skillCooldown[i]/60,0,1);
+        }
+        draw_text_colour(skillX+32,skillY+32,skillTimer,white,white,white,white,1);
     }
-    if(skillAnimation[i,0]) {
+    /*if(skillAnimation[i,0]) {
         draw_sprite(spr_skill_usable,skillAnimation[i,1],skillX,skillY);
-    }
+    }*/
 }
 /******************* POTIONS ******************/
 draw_set_valign(fa_bottom);
@@ -359,6 +490,42 @@ if(global.SPPotionCooldown &gt; -39 &amp;&amp; global.SPPotionCooldown &lt; 0) {
     draw_sprite(spr_skill_usable,-global.SPPotionCooldown,((wv/2)+320)-152,hv-100);
 }
 
+for (var i = 0; i &lt; array_length_1d(hotbarSurface); i++) {
+    if (skillAnimation[i,0]) {
+        if (!surface_exists(hotbarSurface[i])) {
+            hotbarSurface[i] = surface_create(64,64);
+        }
+        else {
+            skillID = i+(20+(global.class*4));
+            draw_surface(hotbarSurface[i],((wv/2)+(i*80))-152,hv-100);
+            surface_set_target(hotbarSurface[i]);
+            draw_sprite_ext(spr_skills,skillID,0,0,2,2,0,white,1);
+            draw_sprite(spr_skill_usable,0,-25+skillAnimation[i,1],-25+skillAnimation[i,1]);
+            surface_reset_target();
+            
+        }
+    }
+}
+/******************* BUFF ******************/
+for (var i = 0; i &lt; buffListSize; i++) {
+    var xx = 16+((i mod 10)*34);
+    var yy = 16+((i div 10)*34);
+    if (buffList[i,buffListData.sprite] != -1) {
+        draw_sprite(spr_buffs,buffList[i,buffListData.sprite],xx,yy);
+        draw_set_valign(fa_bottom);
+        draw_set_halign(fa_right);
+        draw_set_font(buffFont);
+        var time = buffList[i,buffListData.time] div 60;
+        var timeString = "";
+        if (time &gt; 60) {
+            timeString = string(time div 3600)+" m";
+        }
+        else {
+            timeString = string(time)+" s";
+        }
+        draw_text_colour(xx+32,yy+32,timeString,white,white,white,white,1);
+    }
+}
 /******************* SYSTEM MESSAGE ******************/
 draw_set_font(skillFont);
 draw_set_valign(fa_top);
@@ -482,6 +649,20 @@ draw_text_colour(0,0,string(fps)+"#"+string(fps_real),white,white,white,white,1)
             <string>if(global.useLighting){
     lightmap_update();
     lightmap_draw();
+}
+/*for (var i = view_xview[0] div global.gridSize; i &lt; view_wview[0] div global.gridSize; i++) {
+    for (var j = view_yview[0] div global.gridSize; j &lt; view_hport[0] div global.gridSize; j++) {
+        draw_set_alpha(0.3);
+        if (mp_grid_get_cell(global.grid,i,j) == -1) {
+            draw_set_colour(red);
+        }
+        else {
+            draw_set_colour(green);
+        }
+        draw_rectangle(i*global.gridSize,j*global.gridSize,(i+1)*global.gridSize,(j+1)*global.gridSize,false);
+        draw_set_colour(white);
+        draw_set_alpha(1);
+    }
 }
 </string>
           </argument>

@@ -7,7 +7,7 @@ yv = view_yview[0];
 var length = array_height_2d(global.skillCoord);
 var drawInfo = false;
 var viewSkill = 0;
-for(j = 0; j < length; j ++){
+for(var j = 0; j < length; j ++){
     if(global.level >= global.skill[j,2]){
         var preSkill, skillColor, mouseX, mouseY;
         preSkill = global.skill[j,3];
@@ -34,6 +34,7 @@ for(j = 0; j < length; j ++){
             if(global.skill[j,0] != global.skill[j,1] && skillColor != red){
                 if(mouse_check_button_pressed(mb_left) || mouse_check_button(mb_right)){ //Check mouse button pressed
                     increaseSkillLevel(j); //Increment skill level and apply effect
+                    global.skill[j,skillData.requiredLevel]++;
                     sendSystemMessage("Lv."+string(global.skill[j,0])+" "+getSkillName(j)+" learnt"); //Send Message to system
                 }
             }
@@ -57,18 +58,19 @@ for(j = 0; j < length; j ++){
         draw_set_halign(fa_center);
         draw_set_font(global.game_font);
         var stringLevel;
-        if(global.skill[j,0] != global.skill[j,1]){
+        stringLevel = string(global.skill[j,0])+"/"+string(global.skill[j,1]);        
+        /*if(global.skill[j,0] != global.skill[j,1]){
             stringLevel = string(global.skill[j,0])+"/"+string(global.skill[j,1]);        
         }
         else{
             stringLevel = "Maxed";
-        }
+        }*/
         if(global.skill[j,0] > 0){
             draw_text_colour(16+global.skillCoord[j,0]*32,global.skillCoord[j,1]*32,stringLevel,white,white,white,white,1);
         }
     }
 }
-for(i = 0; i < length; i++){
+for(var i = 0; i < length; i++){
     if(global.level >= global.skill[i,2]){
         draw_sprite(spr_skills,i,global.skillCoord[i,0]*32,global.skillCoord[i,1]*32); //Draw image
         if(global.skill[i,0] == 0){
@@ -127,14 +129,23 @@ if(drawInfo){
             case 20: 
                 addString = "Current:#Attack +"+string(useSkill(viewSkill,1)*100)+"%#MP Required: "+string(useSkill(viewSkill,2)+(global.skill[viewSkill,0]*10))+"
                 #Next:#Attack +"+string((useSkill(viewSkill,1)+useSkill(viewSkill,3))*100)+"%#MP Required: "+string(useSkill(viewSkill,2)+((global.skill[viewSkill,0]+1)*10));
+                if(isSkillMax(viewSkill)) {
+                    addString += "##Max Level Upgrade#Create 2 additional#forces";
+                }
                 break;
             case 21: 
                 addString = "Current:#Penetration +"+string(useSkill(viewSkill,1)-1)+"#MP Required: "+string(useSkill(viewSkill,2)+(global.skill[viewSkill,0]*10))+"
                 #Next:#Penetration +"+string(useSkill(viewSkill,1)+useSkill(viewSkill,3)-1)+"#MP Required: "+string(useSkill(viewSkill,2)+((global.skill[viewSkill,0]+1)*10));
+                if(isSkillMax(viewSkill)) {
+                    addString += "##Max Level Upgrade#Recover 1% of damage as HP and MP";
+                }
                 break;
             case 22: 
                 addString = "Current:#Number of Forces: "+string(useSkill(viewSkill,1))+"#MP Required: "+string(useSkill(viewSkill,2)+(global.skill[viewSkill,0]*10))+"
                 #Next:#Number of Forces: "+string(useSkill(viewSkill,1)+useSkill(viewSkill,3))+"#MP Required: "+string(useSkill(viewSkill,2)+((global.skill[viewSkill,0]+1)*10));
+                if(isSkillMax(viewSkill)) {
+                    addString += "##Max Level Upgrade#Forces do multi hits#Multi hits: 30% damage x 4 hits";
+                }
                 break;
             case 23: 
                 addString = "Current:#Attack: "+string(useSkill(viewSkill,1)*100)+"%#MP Required: "+string(useSkill(viewSkill,2)+(global.skill[viewSkill,0]*10));
@@ -143,10 +154,16 @@ if(drawInfo){
             case 24:
                 addString = "Current:#Attack +"+string(round(useSkill(viewSkill,1)*100))+"%#MP Required: "+string(useSkill(viewSkill,2)+(global.skill[viewSkill,0]*10))+"
                 #Next:#Attack +"+string(round((useSkill(viewSkill,1)+useSkill(viewSkill,3))*100))+"%#MP Required: "+string(useSkill(viewSkill,2)+((global.skill[viewSkill,0]+1)*10));
+                if (isSkillMax(viewSkill)) {
+                    addString += "##Max Level Upgrade#Attack range increases";
+                }
                 break;
             case 25: 
                 addString = "Current:#Attack Speed +"+string(useSkill(viewSkill,1))+"#Attack power -"+string(round(global.skill[viewSkill,0]*5))+"%#MP Required: "+string(useSkill(viewSkill,2)+(global.skill[viewSkill,0]*10))+"
                 #Next:#Attack Speed +"+string(useSkill(viewSkill,1)+useSkill(viewSkill,3))+"#Attack power -"+string(round((global.skill[viewSkill,0]+1)*5))+"%#MP Required: "+string(useSkill(viewSkill,2)+((global.skill[viewSkill,0]+1)*10));
+                if (isSkillMax(viewSkill)) {
+                    addString += "##Max Level Upgrade#Create sword projectile";
+                }
                 break;
                 /**************** WZ SKILL ***************/
             case 28: 

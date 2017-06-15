@@ -10,8 +10,8 @@ y1 = argument1;
 x2 = argument2;
 y2 = argument3;
 debug = argument4;
-if ((mouse_x >= x1 && mouse_x <= x2)){
-    if ((mouse_y >= y1 && mouse_y <= y2)){
+if ((window_view_mouse_get_x(0) >= x1 && window_view_mouse_get_x(0) <= x2)){
+    if ((window_view_mouse_get_y(0) >= y1 && window_view_mouse_get_y(0) <= y2)){
         return true;
     }
 }
@@ -20,6 +20,6 @@ else{
 }
 if(debug){
     with(event_perform(ev_draw,0)){
-        draw_rectangle(x1*windowXRatio,y1*windowYRatio,x2*windowXRatio,y2*windowYRatio,false);
+        draw_rectangle_colour(x1*windowXRatio,y1*windowYRatio,x2*windowXRatio,y2*windowYRatio,yellow,yellow,yellow,yellow,false);
     }
 }
