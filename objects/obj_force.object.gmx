@@ -90,22 +90,26 @@ homePlayerOrder = 1;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if(global.class == 0 || global.class == 2){
-    if(x &gt; view_xview[0] &amp;&amp; x &lt; view_wview[0]) {
-        if(y &gt; view_yview[0] &amp;&amp; y &lt; view_hview[0]) {
-            /*if(isElectric) {
-                part_type_shape(partType,pt_shape_spark);
-                part_type_scale(partType,0.2,0.2);
-            }*/
-            part_type_direction(partType,0,360,0,0);
-            part_type_speed(partType,0.1,0.3,0,0);
-            part_type_life(partType,30,30);
-            repeat(10) part_particles_create(partSystem,x,y,partType,1);
-            part_type_speed(partType,0,0,0,0);
-            part_type_life(partType,15,15);
+            <string>if (part_system_exists(partSystem) || part_type_exists(partType)) {
+    if(global.class == 0 || global.class == 2){
+        if(x &gt; view_xview[0] &amp;&amp; x &lt; view_wview[0]) {
+            if(y &gt; view_yview[0] &amp;&amp; y &lt; view_hview[0]) {
+                /*if(isElectric) {
+                    part_type_shape(partType,pt_shape_spark);
+                    part_type_scale(partType,0.2,0.2);
+                }*/
+                part_type_direction(partType,0,360,0,0);
+                part_type_speed(partType,0.1,0.3,0,0);
+                part_type_life(partType,30,30);
+                repeat(10) part_particles_create(partSystem,x,y,partType,1);
+                part_type_speed(partType,0,0,0,0);
+                part_type_life(partType,15,15);
+            }
         }
     }
 }
+part_system_destroy(partSystem);
+part_type_destroy(partType);
 </string>
           </argument>
         </arguments>
@@ -203,22 +207,17 @@ if(homePlayer){
     if(instance_exists(obj_enemy_parent)) {
     target = instance_nearest(x,y,obj_enemy_parent);
         if(fire &gt; 0) {
-            if(global.skillCooldown[0] &gt; 60) {
-                fire -= 4;
-            }
-            else {
-                fire -= 8;
-            }
+            fire -= 10;
             with(instance_create(x,y,obj_force)) {
                 direction = point_direction(x,y,other.target.x,other.target.y);
-                dmg_mod = 0.2;
+                dmg_mod = 0.3;
                 destroyWhenOut = false;
-                if(global.skillCooldown[0] &gt; 60) {dmg_mod = 0.1*useSkill(20,1);}
+                if(global.skillCooldown[0] &gt; 60) {dmg_mod = 0.3*useSkill(20,1);}
                 if(global.skillCooldown[1] &gt; 300) {
                     allowPierce = true;
                     maxPierce = 2;
                 }
-                speed = 5;
+                speed = 7;
             }
         }
         /*if(distance_to_object(target) &lt; 32) {
@@ -286,20 +285,32 @@ if(speedUp){
         speed *= speedingRate;
     }
 }
+if(aIndex == maxPierce) {instance_destroy();}
+if(hit &gt;= maxHit) {instance_destroy();}
 if(addTrail) {
     part_particles_create(partSystem,x,y,partType,1);
 }
-if(aIndex == maxPierce) {instance_destroy();}
-if(hit &gt;= maxHit) {instance_destroy();}
+todo("fix particle system in forces");
 if(global.class == 2 &amp;&amp; !isHeal){
     if(x &lt; room_width || x &gt; 0){
         if(y &lt; room_height || y &gt; 0){
             if(isElectric) {
                 part_type_orientation(partType,direction,direction,0,10,false);
             }
-            part_particles_create(partSystem,x,y,partType,1);
+            if (isElectric) {
+                part_particles_create(global.electricSystem,x,y,global.electricType,1);
+            }
+            else if (useIce) {
+                part_particles_create(global.iceSystem,x,y,global.iceType,1);
+            }
+            else {
+                part_particles_create(global.fireballSystem,x,y,global.fireballType,1);
+            }
         }
     }
+}
+else if (global.class == 0) {
+    part_particles_create(global.forceSystem,x,y,global.forceType,1);
 }
 if(isHeal) {
     image_angle++;

@@ -8,6 +8,7 @@ switch(key){
                     if(global.skillCooldown[0] == 0){ //Check cooldown
                         global.sp -= mpUse; // Deduct mp
                         global.skillCooldown[0] = global.skillMaxCooldown[0]; //Start CD
+                        addBuffList(getSkillName(20),0,global.skill[20,skillData.info],global.skillMaxCooldown[0]-60);
                     }
                 }
             }
@@ -18,6 +19,7 @@ switch(key){
                     if(global.skillCooldown[1] == 0){ //Check cooldown
                         global.sp -= mpUse; // Deduct mp
                         global.skillCooldown[1] = global.skillMaxCooldown[1]; //Start CD
+                        addBuffList(getSkillName(21),1,global.skill[21,skillData.info],global.skillMaxCooldown[1]-300);
                     }
                 }
             }
@@ -56,6 +58,7 @@ switch(key){
                     if(global.skillCooldown[3] == 0){
                         global.sp -= mpUse;
                         global.skillCooldown[3] = global.skillMaxCooldown[3];
+                        addBuffList(getSkillName(23),2,global.skill[23,skillData.info],1800);
                         for(var i = 0; i < 10; i++){
                             with(instance_create(x,y,obj_force)){
                                 speed = 5;
@@ -71,7 +74,7 @@ switch(key){
                                 maxHit = 999999;
                                 image_xscale = 2;
                                 alarm[0] = 50;
-                                alarm[1] = 2400;
+                                alarm[1] = 1800;
                             }
                         }
                     }

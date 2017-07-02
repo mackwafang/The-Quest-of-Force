@@ -40,7 +40,7 @@ global.gridSize = 16;
 global.grid = mp_grid_create(0,0,room_width div global.gridSize,room_height div global.gridSize,global.gridSize,global.gridSize);
 mp_grid_add_instances(global.grid,obj_wall,false);
 
-global.class = 1;
+global.class = 2;
 global.str = 10;
 global.stam = 10;
 global.mana = 5;
@@ -55,7 +55,7 @@ global.maxSP = 30;
 global.hpGen = 0;
 global.spGen = 0;
 global.sp = global.maxSP;
-global.xp = calculateTotalXP(50);
+global.xp = calculateTotalXP(100);
 global.maxXP = 10;
 global.gold = 0;
 global.HPPotion = 5;
@@ -101,13 +101,13 @@ enum buffListData {
     description = 2,
     time = 3
 }
+globalvar buffListSize, buffList;
 buffListSize = 30;
 for (var i = 0; i &lt; buffListSize; i ++) {
     buffList[i,buffListData.name] = "";
     buffList[i,buffListData.sprite] = -1;
     buffList[i,buffListData.description] = "";
     buffList[i,buffListData.time] = 0;
-    addBuffList("AYYY LMAO",0,"420 BLAZIT",irandom(12)*60);
 }
 /********************* MESSAGE ******************/
 systemMessageTimer = 0;

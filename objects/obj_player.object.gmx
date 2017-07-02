@@ -311,44 +311,49 @@ if(canMove){
     if(keyboard_check_pressed(ord("X"))) {
         if(global.HPPotionCooldown &lt;= 0 &amp;&amp; global.HPPotion &gt; 0) {
             global.HPPotion--;
-            heal(round(global.maxHP)*0.5,0);
-            global.HPPotionCooldown = 300;
+            heal(round(global.maxHP)*0.25,0);
+            global.HPPotionCooldown = 600;
+            addBuffList("HP Potion",10,"HP continuously recovers",300);
         }
     }
     if(keyboard_check_pressed(ord("C"))) {
         if(global.SPPotionCooldown &lt;= 0 &amp;&amp; global.SPPotion &gt; 0) {
             global.SPPotion--;
-            heal(0,round(global.maxSP)*0.5);
-            global.SPPotionCooldown = 300;
+            heal(0,round(global.maxSP)*0.25);
+            global.SPPotionCooldown = 600;
+            addBuffList("SP Potion",11,"SP continuously recovers",300);
         }
     }
 }
 moveSpeed = 2+useSkill(41,1);
 speed = clamp(speed,-moveSpeed,moveSpeed);
 image_angle = point_direction(x,y,mouse_x,mouse_y);
-if(healthGen &lt; 60){
-    if(speed == 0){
-        healthGen++;
-    }
+var healHPTime = 60;
+var healSPTime = 60-(useSkill(18,2)*global.skill[18,0]);
+if (global.HPPotionCooldown &gt; 300) {
+    healHPTime *= 0.25;
+}
+if (global.SPPotionCooldown &gt; 300) {
+    healSPTime *= 0.25;
+}
+
+if (healthGen &lt; healHPTime){
+    healthGen++;
 }
 else{
     if(health &lt; global.maxHP){
-        health += global.hpGen/60;
+        health += round(global.hpGen);
     }
-    else{
-        healthGen = 0;
-    }
+    healthGen = 0;
 }
-if(manaGen &lt; 30-(useSkill(18,2)*global.skill[18,0])){
+if(manaGen &lt; healSPTime){
     manaGen++;
 }
 else{
     if(global.sp &lt; global.maxSP){
-        global.sp += global.spGen/60;
+        global.sp += global.spGen;
     }
-    else{
-        manaGen = 0;
-    }
+    manaGen = 0;
 }
 if(global.class == 2 &amp;&amp; global.skillCooldown[1] &gt; 300){
     global.sp += useSkill(29,1)/60;
@@ -462,32 +467,26 @@ while(place_meeting(x,y,other)){
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if(other.isHeal){
-    if(other.multiHit){ //multiple hit
-        if(hitInt &lt; other.maxHitInt){ //Check interval
-            hitInt++; // increment
-        }
-        else{
-            hitInt = 0; //reset counter
-            if(other.hit &lt; other.maxHit){//increment total allowed hit
-                other.hit++;
-            }
-            else{
-                instance_destroy();
-            }
-            damage = max(round(global.maxHP*(useSkill(28,1)/100)),1)
-            health += damage;
-            if(instance_exists(obj_player)){
-                with(instance_create(obj_player.x,obj_player.y-16,obj_dmg_inc)){
-                    damage = other.damage;
-                    wait = 0;
-                    color = green;
-                    font = global.damage_font;
-                    size = 2;
-                }
-            }
-        }
-    }
+            <string>event_inherited();
+image_index = 0;
+level = global.level
+str = level;
+expGain = level*10;
+equipWeapon = false;
+stam = round(3*sin(level)+(3*level));
+mana = stam div 2;
+enemy_max_health = round(20*cos(level)+(35*level))+(level*75);
+goldDrop = (level div 5)+global.luck;
+minSpotFov = 30;
+minSpotRange = 128;
+maxSpotFov = 60;
+maxSpotRange = 256;
+enemy_health = enemy_max_health;
+maxHealthBars = 90;
+healthBars = maxHealthBars;
+if (irandom(10) == 0) {
+    maxHealthBars = irandom(40);
+    healthBars = maxHealthBars;
 }
 </string>
           </argument>

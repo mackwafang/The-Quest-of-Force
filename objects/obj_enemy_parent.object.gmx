@@ -26,6 +26,7 @@
           <argument>
             <kind>1</kind>
             <string>event_inherited();
+canMove = true;
 //shader = shader_get_uniform(shd_motionBlur,"pos");
 image_speed = 0;
 friction = 0.1;
@@ -35,6 +36,10 @@ str = 0;
 stam = 0;
 mana = 0;
 luck = 0;
+enemy_health = 0;
+enemy_max_health = 1;
+maxHealthBars = 0;
+healthBars = 0;
 critRate = 0;
 critDamage = 0;
 expGain = level;
@@ -215,8 +220,8 @@ if (alert == 0) {
             //speed = moveSpeed;
             mp_grid_clear_cell(global.grid,x div global.gridSize, y div global.gridSize);
             var pathFound = mp_grid_path(global.grid,path,x,y,goX,goY,true);
-            var xx = path_get_x(path,1/path_get_number(path));
-            var yy = path_get_y(path,1/path_get_number(path));
+            var xx = path_get_x(path,1/max(1,path_get_number(path)));
+            var yy = path_get_y(path,1/max(1,path_get_number(path)));
             direction = point_direction(x,y,xx,yy);
             speed = moveSpeed;
         }
@@ -227,26 +232,35 @@ if (alert == 0) {
 }
 if (fire &lt; 1) {fire++;}
 healthShow = clamp(healthShow,0,100);
-if(enemy_health &lt;= 0){
-    enemy_health = 0;
-    global.xp += expGain;
-    sendSystemMessage("+"+string(expGain)+" XP");
-    dropGold(goldDrop);
-    var dropPotionChance = irandom(25);
-    if(dropPotionChance &lt; 5) {
-        if(dropPotionChance mod 2 == 1) { 
-            with(instance_create(x,y,obj_drop_item)) {image_index = 3;}
-        }
-        else {
-            with(instance_create(x,y,obj_drop_item)) {image_index = 4;}
-        }
+/****************************** DIES ***********************************/
+if (enemy_health &lt;= 0) {
+    if (healthBars &gt; 0) {
+        healthBars--;
+        enemy_health += enemy_max_health;
     }
-    /*with(instance_create(x,y-25,obj_dmg_inc)){
-        damage = other.totalDamage;
-        wait = -60;
-        size = 1;
-    }*/
-    instance_destroy();
+    else {
+        enemy_health = 0;
+        global.xp += expGain;
+        expGain *= healthBars;
+        goldDrop *= healthBars;
+        sendSystemMessage("+"+string(expGain)+" XP");
+        dropGold(goldDrop);
+        var dropPotionChance = irandom(25);
+        if(dropPotionChance &lt; 5) {
+            if(dropPotionChance mod 2 == 1) { 
+                with(instance_create(x,y,obj_drop_item)) {image_index = 3;}
+            }
+            else {
+                with(instance_create(x,y,obj_drop_item)) {image_index = 4;}
+            }
+        }
+        /*with(instance_create(x,y-25,obj_dmg_inc)){
+            damage = other.totalDamage;
+            wait = -60;
+            size = 1;
+        }*/
+        instance_destroy();
+    }
 }
 if(totalCrit &gt; 1) {totalCrit *= 0.9;} else {totalCrit = 1;}
 if(totalFade &gt; 0) {totalFade -= 0.05;} else {totalDamage = 0;}
@@ -335,69 +349,69 @@ if(canMove){
             alertTime = 600;
         }
     }
-}
-if(alertTime &gt; 0){
-    alertTime--;
-}
-else{
-    alert = 0;
-}
-switch(alert){
-    case 0: spotRange = var_wipe(spotRange,minSpotRange,100,0.05,0);
-            spotFov = var_wipe(spotFov,minSpotFov,100,0.05,0);
-            break;
-    case 1: spotRange = var_wipe(spotRange,maxSpotRange,100,alertRate/2,0);
-            spotFov = var_wipe(spotFov,minSpotFov*2,100,alertRate/2,0);
-            if(alertTime &gt; 0){
-                alertTime--;
-            }
-            else{
-                alert = 0;
-            }
-            break;
-    case 2: spotRange = var_wipe(spotRange,maxSpotRange,100,alertRate,0);
-            spotFov = var_wipe(spotFov,maxSpotFov,100,alertRate,0);
-            if (instance_exists(obj_player)) { 
-                if(kbTime == 0){
-                    mp_grid_clear_cell(global.grid,x div global.gridSize, y div global.gridSize);
-                    mp_grid_clear_cell(global.grid,obj_player.x div global.gridSize, obj_player.y div global.gridSize);
-                    var pathFound = mp_grid_path(global.grid,path,x,y,obj_player.x,obj_player.y,true);
-                    if (pathFound) {
-                        var xx = path_get_x(path,1/path_get_number(path));
-                        var yy = path_get_y(path,1/path_get_number(path));
-                        direction = point_direction(x,y,xx,yy);
-                        if(object_index != obj_enemy_wizard) {
-                            speed = moveSpeed;
-                        }
-                        else {
-                            if(distance_to_object(target) &gt; 128) {
-                                speed = moveSpeed/2;
+    if(alertTime &gt; 0){
+        alertTime--;
+    }
+    else{
+        alert = 0;
+    }
+    switch(alert){
+        case 0: spotRange = var_wipe(spotRange,minSpotRange,100,0.05,0);
+                spotFov = var_wipe(spotFov,minSpotFov,100,0.05,0);
+                break;
+        case 1: spotRange = var_wipe(spotRange,maxSpotRange,100,alertRate/2,0);
+                spotFov = var_wipe(spotFov,minSpotFov*2,100,alertRate/2,0);
+                if(alertTime &gt; 0){
+                    alertTime--;
+                }
+                else{
+                    alert = 0;
+                }
+                break;
+        case 2: spotRange = var_wipe(spotRange,maxSpotRange,100,alertRate,0);
+                spotFov = var_wipe(spotFov,maxSpotFov,100,alertRate,0);
+                if (instance_exists(obj_player)) { 
+                    if(kbTime == 0){
+                        mp_grid_clear_cell(global.grid,x div global.gridSize, y div global.gridSize);
+                        mp_grid_clear_cell(global.grid,obj_player.x div global.gridSize, obj_player.y div global.gridSize);
+                        var pathFound = mp_grid_path(global.grid,path,x,y,obj_player.x,obj_player.y,true);
+                        if (pathFound) {
+                            var xx = path_get_x(path,1/max(1,path_get_number(path)));
+                            var yy = path_get_y(path,1/max(1,path_get_number(path)));
+                            direction = point_direction(x,y,xx,yy);
+                            if(object_index != obj_enemy_wizard) {
+                                speed = moveSpeed;
                             }
                             else {
-                                if(fire &gt; 0) {
-                                    fire -= 40;
-                                    with(instance_create(x,y,obj_enemy_force)) {
-                                        direction = point_direction(x,y,other.target.x,other.target.y);
-                                        speed = 4;
-                                        dmg_type = 1;
-                                        critRate = other.critRate;
-                                        critDamage = other.critDamage;
-                                        damage = other.mana;
-                                        dmg_mod = 2;
-                                        isMagic = true;
-                                        visible = false;
+                                if(distance_to_object(target) &gt; 128) {
+                                    speed = moveSpeed/2;
+                                }
+                                else {
+                                    if(fire &gt; 0) {
+                                        fire -= 40;
+                                        with(instance_create(x,y,obj_enemy_force)) {
+                                            direction = point_direction(x,y,other.target.x,other.target.y);
+                                            speed = 4;
+                                            dmg_type = 1;
+                                            critRate = other.critRate;
+                                            critDamage = other.critDamage;
+                                            damage = other.mana;
+                                            dmg_mod = 2;
+                                            isMagic = true;
+                                            visible = false;
+                                        }
                                     }
                                 }
                             }
                         }
+                        alarm[0] = 60;
                     }
-                    alarm[0] = 60;
                 }
-            }
-            else {
-                alert = 0;
-            }
-            break;
+                else {
+                    alert = 0;
+                }
+                break;
+    }
 }
 </string>
           </argument>
@@ -480,6 +494,7 @@ speed = 0;
     alert = 1;
 }
 image_angle = other.direction;
+wipeTime = 30;
 ds_queue_clear(coordinates);
 for(var i = 0; i &lt; 10; i++){
     ds_queue_enqueue(coordinates,x+lengthdir_x(i*10,point_direction(x,y,other.x,other.y)));
@@ -613,9 +628,21 @@ if(alert != 0) {
 
 draw_text_colour(xx,yy-26,"Lv."+string(level),white,white,white,white,1);
 draw_set_alpha(min((-point_distance(x,y,mouse_x,mouse_y)/64)+1,1));
-draw_rectangle_colour(xx-20,yy-16,xx+20,yy-26,0,0,0,0,false);
-draw_rectangle_colour(xx-18,yy-18,xx-18+(healthShow/100)*36,yy-24,red,red,red,red,false);
-draw_rectangle_colour(xx-18,yy-18,xx-18+((enemy_health/enemy_max_health)*36),yy-24,green,green,green,green,false);
+if (healthBars &gt; 0) {
+    draw_set_valign(fa_center);
+    draw_set_halign(fa_right);
+    draw_set_colour(white);
+    draw_text(xx-12,yy-21,healthBars);
+    draw_set_colour(white);
+    draw_rectangle_colour(xx-12,yy-16,xx+20,yy-26,0,0,0,0,false);
+    draw_rectangle_colour(xx-10,yy-18,xx-10+(healthShow/100)*28,yy-24,red,red,red,red,false);
+    draw_rectangle_colour(xx-10,yy-18,xx-10+(max(0,enemy_health/enemy_max_health)*28),yy-24,green,green,green,green,false);
+}
+else {
+    draw_rectangle_colour(xx-20,yy-16,xx+20,yy-26,0,0,0,0,false);
+    draw_rectangle_colour(xx-18,yy-18,xx-18+(healthShow/100)*36,yy-24,red,red,red,red,false);
+    draw_rectangle_colour(xx-18,yy-18,xx-18+(max(0,enemy_health/enemy_max_health)*36),yy-24,green,green,green,green,false);
+}
 draw_set_valign(fa_top);
 draw_set_halign(fa_center);
 draw_set_alpha(1);

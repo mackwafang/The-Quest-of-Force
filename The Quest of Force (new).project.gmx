@@ -123,6 +123,8 @@
     <script>scripts\isSkillMax.gml</script>
     <script>scripts\addBuffList.gml</script>
     <script>scripts\buffListLength.gml</script>
+    <script>scripts\assert.gml</script>
+    <script>scripts\todo.gml</script>
   </scripts>
   <shaders name="shaders">
     <shader type="GLSLES">shaders\shd_motionBlur.shader</shader>

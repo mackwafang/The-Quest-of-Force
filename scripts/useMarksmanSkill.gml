@@ -8,6 +8,7 @@ switch(key){
                     if(global.skillCooldown[0] == 0){ //Check cooldown
                         global.sp -= mpUse; // Deduct mp
                         global.skillCooldown[0] = global.skillMaxCooldown[0]; //Start CD
+                        addBuffList(getSkillName(32),8,global.skill[32,skillData.info],global.skillMaxCooldown[0]-60);
                     }
                 }
             }
@@ -18,6 +19,7 @@ switch(key){
                     if(global.skillCooldown[1] == 0){ //Check cooldown
                         global.sp -= mpUse; // Deduct mp
                         global.skillCooldown[1] = global.skillMaxCooldown[1]; //Start CD
+                        addBuffList(getSkillName(33),9,global.skill[33,skillData.info],global.skillMaxCooldown[1]-300);
                     }
                 }
             }

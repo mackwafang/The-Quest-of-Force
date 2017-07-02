@@ -34,7 +34,7 @@ draw_text(96,192,"LUCK: "+string(global.luck));
 draw_text(96,256,global.maxHP);
 draw_text(96,288,"+"+string(global.hpGen));
 draw_text(96,320,global.maxSP);
-draw_text(96,352,"+"+string(global.spGen*60/(30-(useSkill(18,2)*global.skill[18,0]))));
+draw_text(96,352,"+"+string(global.spGen));
 
 draw_text(320,96,"Critical: "+string(global.crit)+"%");
 draw_text(320,128,"Crit. Damage: "+string(global.critAtt));

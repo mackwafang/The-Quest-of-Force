@@ -195,10 +195,10 @@ global.skill[19,skillData.increaseEffect] = 0.05;
         global.skill[20,skillData.maxLevel] = 10;
         global.skill[20,skillData.requiredLevel] = 0;
         global.skill[20,skillData.preReq] = -1;
-        global.skill[20,skillData.info] = "[Heavy Impact]#Force does +10% damage per level for 4 seconds";
+        global.skill[20,skillData.info] = "[Heavy Impact]#Force damage increase by 25% damage per level";
         global.skill[20,skillData.primaryEffect] = 1;
         global.skill[20,skillData.secondaryEffect] = 5;
-        global.skill[20,skillData.increaseEffect] = 0.1;
+        global.skill[20,skillData.increaseEffect] = 0.25;
         /************** SKILL 22 **************/
         global.skill[21,skillData.level] = 0;
         global.skill[21,skillData.maxLevel] = 5;
@@ -231,10 +231,10 @@ global.skill[19,skillData.increaseEffect] = 0.05;
         global.skill[24,skillData.maxLevel] = 10;
         global.skill[24,skillData.requiredLevel] = 0;
         global.skill[24,skillData.preReq] = -1;
-        global.skill[24,skillData.info] = "[Enhanced Sword]#Normal and Special Attack now do +10% per level for 4 seconds";
+        global.skill[24,skillData.info] = "[Enhanced Sword]#Normal and Special Attack increase by 25% per level";
         global.skill[24,skillData.primaryEffect] = 1;
         global.skill[24,skillData.secondaryEffect] = 5;
-        global.skill[24,skillData.increaseEffect] = 0.1;
+        global.skill[24,skillData.increaseEffect] = 0.25;
         /************** SKILL 26 **************/
         global.skill[25,skillData.level] = 0;
         global.skill[25,skillData.maxLevel] = 5;

@@ -8,6 +8,7 @@ switch(key){
                     if(global.skillCooldown[0] == 0){ //Check cooldown
                         global.sp -= mpUse; // Deduct mp
                         global.skillCooldown[0] = global.skillMaxCooldown[0]; //Start CD
+                        addBuffList(getSkillName(28),5,global.skill[28,skillData.info],global.skillMaxCooldown[0]-60);
                         with(instance_create(x,y,obj_force)){
                             visible = true;
                             dmg_mod = 1+(useSkill(28,1)/100);
@@ -32,6 +33,7 @@ switch(key){
                     if(global.skillCooldown[1] == 0){ //Check cooldown
                         global.sp -= mpUse; // Deduct mp
                         global.skillCooldown[1] = global.skillMaxCooldown[1]; //Start CD
+                        addBuffList(getSkillName(29),6,global.skill[29,skillData.info],global.skillMaxCooldown[1]-300);
                     }
                 }
             }
@@ -53,6 +55,7 @@ switch(key){
                     if(global.skillCooldown[3] == 0){
                         global.sp -= mpUse;
                         global.skillCooldown[3] = global.skillMaxCooldown[3];
+                        addBuffList(getSkillName(31),7,global.skill[31,skillData.info],global.skillCooldown[3]-600);
                     }
                 }
             }

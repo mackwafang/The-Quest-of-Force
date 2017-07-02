@@ -111,22 +111,17 @@ if(global.class == 1){
         damage = round(damage*useSkill(24,1));
     }
 }
-if(!isCrit) {
-    with(instance_create(x,y-32,obj_dmg_inc)){
-        damage = string(other.damage);
-        color = white;
-        font = global.damage_font;
-        size = 2;
-    }
+var dmgInd = instance_create(x+irandom(sprite_width)*choose(-1,1),y+irandom(sprite_height)*choose(-1,1),obj_dmg_inc);
+dmgInd.damage = string(damage);
+dmgInd.font = global.damage_font;
+if (isCrit) {
+    dmgInd.size = 3;
+    dmgInd.color = orange;
 }
 else {
-    with(instance_create(x,y-32,obj_dmg_inc)){
-        damage = string(other.damage);
-        color = orange;
-        wait = -30;
-        font = global.damage_font;
-        size = 3;
-    }
+    dmgInd.size = 2;
+    wait = -30;
+    dmgInd.color = white;
 }
 /*
 if(damage > enemy_max_health){
