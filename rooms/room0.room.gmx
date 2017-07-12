@@ -10,7 +10,7 @@
   <persistent>0</persistent>
   <colour>12632256</colour>
   <showcolour>-1</showcolour>
-  <code>fireballParticleInit();
+  <code>fireParticleInit();
 iceParticleInit();
 forceParticleInit();</code>
   <enableViews>-1</enableViews>

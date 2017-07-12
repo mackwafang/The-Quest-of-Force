@@ -34,13 +34,6 @@ healthGen = 0;
 manaGen = 0;
 dmg_mod = 1;
 
-system = part_system_create();
-part = part_type_create()
-
-part_type_sprite(part,spr_slash,true,false,false);
-part_type_orientation(part,0,360,0,0,0);
-part_type_life(part,16,16);
-
 damage = 0;
 totalDamage = 0;
 totalFade = 0;
@@ -52,8 +45,6 @@ skillActiveTime = 0;
 skillAmmo = 0;
 
 holder = 0; //Holder variable for any use
-light_init_point(256,white);
-light_set_height(2);
 </string>
           </argument>
         </arguments>
@@ -329,7 +320,7 @@ moveSpeed = 2+useSkill(41,1);
 speed = clamp(speed,-moveSpeed,moveSpeed);
 image_angle = point_direction(x,y,mouse_x,mouse_y);
 var healHPTime = 60;
-var healSPTime = 60-(useSkill(18,2)*global.skill[18,0]);
+var healSPTime = max(1,60-((useSkill(16,2)+useSkill(17,2)+useSkill(18,2))*global.skill[18,0]));
 if (global.HPPotionCooldown &gt; 300) {
     healHPTime *= 0.25;
 }
@@ -356,7 +347,7 @@ else{
     manaGen = 0;
 }
 if(global.class == 2 &amp;&amp; global.skillCooldown[1] &gt; 300){
-    global.sp += useSkill(29,1)/60;
+    global.sp += useSkill(29,1);
 }
 knockbackPerform();
 </string>
@@ -467,26 +458,15 @@ while(place_meeting(x,y,other)){
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>event_inherited();
-image_index = 0;
-level = global.level
-str = level;
-expGain = level*10;
-equipWeapon = false;
-stam = round(3*sin(level)+(3*level));
-mana = stam div 2;
-enemy_max_health = round(20*cos(level)+(35*level))+(level*75);
-goldDrop = (level div 5)+global.luck;
-minSpotFov = 30;
-minSpotRange = 128;
-maxSpotFov = 60;
-maxSpotRange = 256;
-enemy_health = enemy_max_health;
-maxHealthBars = 90;
-healthBars = maxHealthBars;
-if (irandom(10) == 0) {
-    maxHealthBars = irandom(40);
-    healthBars = maxHealthBars;
+            <string>if (other.isHeal) {
+    if (other.hitInt == other.maxHitInt) {
+        damage = round((useSkill(28,1)/100)*global.maxHP);
+        health += damage;
+        var ind = instance_create(x+irandom(sprite_width)*choose(-1,1),y+irandom(sprite_height)*choose(-1,1),obj_dmg_inc);
+        ind.damage = damage;
+        ind.size = 2;
+        ind.color = green;
+    }
 }
 </string>
           </argument>

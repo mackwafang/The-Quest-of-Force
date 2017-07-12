@@ -1,7 +1,8 @@
 ///increaseSkillLevel(skill)
 skill = argument0;
 if(global.skill[skill,0] < global.skill[skill,1]){ // If skill level is not maxed
-    global.skillPoints --; //Decrease skill level
+    global.skillPoints --; //Decrease skill points
+    global.skill[skill,skillData.requiredLevel]++; //increase level requirement
     global.skill[skill,0] ++; // Increment
     for(i = 0; i < 4; i++){
         if(skill == i){

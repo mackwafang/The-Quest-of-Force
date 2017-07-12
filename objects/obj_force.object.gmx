@@ -28,8 +28,8 @@
             <string>isElectric = false;
 useIce = false;
 addTrail = false;
-partSystem = -1;
-partType = -1;
+//partSystem = -1;
+//partType = -1;
 
 damage = 0;
 dmg_mod = 1;
@@ -38,10 +38,12 @@ dmg_mod_increase = 0;
 maxSize = 5;
 
 onFire = false;
+inflictBleed = false;
 bounce = false;
 destroyOnWall = true;
 specialAttack = false;
 destroyWhenOut = true;
+destroyWhenOutTimer = 600;
 allowPierce = false;
 maxPierce = 15;
 aIndex = 0;
@@ -90,26 +92,32 @@ homePlayerOrder = 1;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if (part_system_exists(partSystem) || part_type_exists(partType)) {
-    if(global.class == 0 || global.class == 2){
-        if(x &gt; view_xview[0] &amp;&amp; x &lt; view_wview[0]) {
-            if(y &gt; view_yview[0] &amp;&amp; y &lt; view_hview[0]) {
-                /*if(isElectric) {
-                    part_type_shape(partType,pt_shape_spark);
-                    part_type_scale(partType,0.2,0.2);
-                }*/
-                part_type_direction(partType,0,360,0,0);
-                part_type_speed(partType,0.1,0.3,0,0);
-                part_type_life(partType,30,30);
-                repeat(10) part_particles_create(partSystem,x,y,partType,1);
-                part_type_speed(partType,0,0,0,0);
-                part_type_life(partType,15,15);
+            <string>if(global.class == 0 || global.class == 2){
+    if(x &gt; view_xview[0] &amp;&amp; x &lt; view_wview[0]) {
+        if(y &gt; view_yview[0] &amp;&amp; y &lt; view_hview[0]) {
+            /*if(isElectric) {
+                part_type_shape(partType,pt_shape_spark);
+                part_type_scale(partType,0.2,0.2);
+            }*/
+            switch(global.class) {
+                case 0:
+                    part_particles_create(global.forceExplodeSystem,x,y,global.forceExplodeType,5);
+                    break;
+                case 2:
+                    if (isElectric) {
+                        part_particles_create(global.electricSystem,x,y,global.electricType,5);
+                    }
+                    else if (useIce) {
+                        part_particles_create(global.iceSystem,x,y,global.iceType,5);
+                    }
+                    else {
+                        part_particles_create(global.fireExplodeSystem,x,y,global.fireExplodeType,5);
+                    }
+                    break;
             }
         }
     }
 }
-part_system_destroy(partSystem);
-part_type_destroy(partType);
 </string>
           </argument>
         </arguments>
@@ -261,15 +269,15 @@ alarm[0] = 1;
     sprite_index = spr_arrow;
     if (global.skillCooldown[1] &gt; 300) {image_index = 1;} else {image_index = 0;}
 }
-if(!isElectric){
+/*if(!isElectric){
     if(useIce){
         partSystem = global.iceSystem;
         partType = global.iceType
 
     }
     else{
-        partSystem = global.fireballSystem;
-        partType = global.fireballType;
+        partSystem = global.fireSystem;
+        partType = global.fireType;
     }
 }
 else {
@@ -279,6 +287,12 @@ else {
 if(global.class == 0) {
     partSystem = global.forceSystem;
     partType = global.forceType;
+}*/
+if(hitInt &lt; other.maxHitInt){ //Check interval
+    hitInt++; // increment
+}
+else {
+    hitInt = 0;
 }
 if(speedUp){
     if(speed &lt; maxSpeed){
@@ -287,10 +301,10 @@ if(speedUp){
 }
 if(aIndex == maxPierce) {instance_destroy();}
 if(hit &gt;= maxHit) {instance_destroy();}
-if(addTrail) {
+/*if(addTrail) {
     part_particles_create(partSystem,x,y,partType,1);
-}
-todo("fix particle system in forces");
+}*/
+//todo("fix particle system in forces");
 if(global.class == 2 &amp;&amp; !isHeal){
     if(x &lt; room_width || x &gt; 0){
         if(y &lt; room_height || y &gt; 0){
@@ -304,13 +318,10 @@ if(global.class == 2 &amp;&amp; !isHeal){
                 part_particles_create(global.iceSystem,x,y,global.iceType,1);
             }
             else {
-                part_particles_create(global.fireballSystem,x,y,global.fireballType,1);
+                part_particles_create(global.fireSystem,x,y,global.fireType,1);
             }
         }
     }
-}
-else if (global.class == 0) {
-    part_particles_create(global.forceSystem,x,y,global.forceType,1);
 }
 if(isHeal) {
     image_angle++;
@@ -321,6 +332,16 @@ if(isHeal) {
 }
 else{
     image_angle = direction;
+}
+if (!destroyWhenOut) {
+    if (x &lt; 0 || x &gt; room_width || y &lt; 0 || y &gt; room_height) {
+        if (destroyWhenOutTimer &gt; 0) {
+            destroyWhenOutTimer--;
+        }
+        else {
+            instance_destroy();
+        }
+    }
 }
 </string>
           </argument>

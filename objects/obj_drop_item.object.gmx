@@ -96,6 +96,18 @@ friction = 0.1;
         global.SPPotion++;
         sendSystemMessage("SP Potion Acquired");
         break;
+    case 5:
+        global.gold += 100;
+        break;
+    case 6:
+        global.gold += 250;
+        break;
+    case 7:
+        global.gold += 500;
+        break;
+    case 8:
+        global.gold += 5000;
+        break;
 }
 instance_destroy();
 </string>

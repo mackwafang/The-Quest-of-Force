@@ -86,16 +86,7 @@ homePlayerOrder = 1;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if(global.class == 0 || global.class == 2){
-    part_type_direction(partType,0,360,0,0);
-    part_type_speed(partType,0.1,0.3,0,0);
-    part_type_life(partType,30,30);
-    repeat(10) part_particles_create(partSystem,x,y,partType,1);
-    part_type_speed(partType,0,0,0,0);
-    part_type_life(partType,15,15);
-}
-part_type_destroy(partType);
-part_system_destroy(partSystem);
+            <string>part_particles_create(global.fireExplodeSystem,x,y,global.fireExplodeSystem,1);
 </string>
           </argument>
         </arguments>
@@ -237,21 +228,21 @@ alarm[0] = 1;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if(!isElectric){
+            <string>/*if(!isElectric){
     if(useIce){
         partSystem = global.iceSystem;
         partType = global.iceType
 
     }
     else{
-        partSystem = global.fireballSystem;
-        partType = global.fireballType;
+        partSystem = global.fireSystem;
+        partType = global.fireType;
     }
 }
 else if(isElectric || useIce){
     partSystem = global.forceSystem;
     partType = global.forceType;
-}
+}*/
 if(speedUp){
     if(speed &lt; maxSpeed){
         speed *= speedingRate;
@@ -262,7 +253,8 @@ if(hit &gt;= maxHit) {instance_destroy();}
 if(!isHeal){
     if(x &lt; room_width || x &gt; 0){
         if(y &lt; room_height || y &gt; 0){
-            part_particles_create(partSystem,x,y,partType,1);
+            //part_particles_create(partSystem,x,y,partType,1);
+            part_particles_create(global.fireSystem,x,y,global.fireType,1);
         }
     }
 }

@@ -40,7 +40,7 @@ global.gridSize = 16;
 global.grid = mp_grid_create(0,0,room_width div global.gridSize,room_height div global.gridSize,global.gridSize,global.gridSize);
 mp_grid_add_instances(global.grid,obj_wall,false);
 
-global.class = 2;
+global.class = 0;
 global.str = 10;
 global.stam = 10;
 global.mana = 5;
@@ -89,10 +89,10 @@ for(var i = 0; i &lt; global.systemMessageLength; i++){
 }
 for(var i = 0; i &lt; 4; i++) {
     skillAnimation[i,0] = false;
-    skillAnimation[i,1] = 0;
+    skillAnimation[i,1] = -1;
 }
 for (var i = 0; i &lt; 4; i++) {
-    hotbarSurface[i] = surface_create(64,64);
+    hotbarSurface[i] = -1;
 }
 /********************* BUFF ******************/
 enum buffListData {
@@ -124,14 +124,17 @@ increaseSkillLevel(20+(global.class*4));
 global.skillPoints++;
 //setAllSkills(-1);
 global.useLighting = false;
-if(global.useLighting){
-    lightmap_init(view_wview[0],view_hview[0]);
-    lightmap_set_caster_parent_object(obj_wall);
-    lightmap_set_light_parent_object(obj_player);
-    lightmap_move_with_view(true);
-    lightmap_set_ambient(0);
-}
 display_set_gui_size(view_wport,view_hport);
+globalvar displayDamage, quality;
+displayDamage = true;
+quality = 0;
+
+globalvar totalHits, totalPlayerDamage, damageTimer, damageTimerMax;
+damageTimerMax = 180;
+damageTimer = 0;
+totalHits = 0;
+totalPlayerDamage = 0;
+
 healthMove = 0;
 spMove = 0;
 xpMove = 0;
@@ -168,9 +171,22 @@ spMove = var_wipe(spMove,global.sp,global.maxSP,0,0.5);
 xpMove = var_wipe(xpMove,global.xp,global.maxXP,0.2,0);
 global.sp = clamp(global.sp,0,global.maxSP);
 health = clamp(health,0,global.maxHP);
-global.hpGen = 0.1+min(100,global.stam div 5)+useSkill(39,1)+useSkill(40,1)+useSkill(47,1);
-global.spGen = 0.1+min(100,global.mana div 5)+useSkill(16,1)+useSkill(17,1)+useSkill(18,1);
-global.critAtt = useSkill(37,1)+useSkill(38,1)+((global.str+global.mana) div 20);
+/******************* HP GEN ************************/
+global.hpGen = 0.1+min(100,global.stam div 5);
+global.hpGen += useSkill(39,1);
+global.hpGen += useSkill(40,1);
+global.hpGen += useSkill(47,1);
+/******************* SP GEN ************************/
+global.spGen = 0.1+min(100,global.mana div 5)
+global.spGen += useSkill(16,1);
+global.spGen += useSkill(17,1);
+global.spGen += useSkill(18,1);
+/******************* CRITICAL ************************/
+global.critAtt = ((global.str+global.mana) div 20);
+global.critAtt += useSkill(37,1);
+if (global.skill[38,skillData.level] &gt; 0) {
+    global.critAtt *= useSkill(38,1);
+}
 
 for (var k = 0; k &lt; instance_number(obj_enemy_parent); k ++) {
     var enemy = instance_find(obj_enemy_parent,k);
@@ -226,7 +242,7 @@ for (var i = 0; i &lt; buffListSize; i++) {
     }
 }
 /******************* Skill Cooldown ******************/
-for(i = 0; i &lt; 4; i++){
+for(var i = 0; i &lt; 4; i++){
     if(global.skillCooldown[i] &gt; 0){
         global.skillCooldown[i] --;
         if(global.skillCooldown[i] == 1){
@@ -240,6 +256,9 @@ for(i = 0; i &lt; 4; i++){
         else {
             skillAnimation[i,0] = false;
             skillAnimation[i,1] = 0;
+            if (surface_exists(hotbarSurface[i])) {
+                surface_free(hotbarSurface[i]);
+            }
         }
     }
 }
@@ -278,12 +297,6 @@ if(global.xp &gt;= global.maxXP){
     global.xp -= global.maxXP;
     global.maxXP = ceil(90*power(global.level,0.8));
     sendSystemMessage("Level "+string(global.level)+" achieved!");
-    for(i = 0; i &lt; array_height_2d(global.skill); i++){
-        if(global.level == global.skill[i,2]){
-            sendSystemMessage(getSkillName(i)+" can be learn");
-            break;
-        }
-    }
     global.skillPoints ++;
     switch(global.class){
         case 0: increaseBasicStats(2,2,2,2);
@@ -302,6 +315,15 @@ if(global.xp &gt;= global.maxXP){
                 increaseHPSP(15,5);
                 break;
     }
+}
+/************** Combos ***************/
+if (damageTimer &gt; 0) {
+    damageTimer--;
+}
+else {
+    damageTimer = 0;
+    totalHits = 0;
+    totalPlayerDamage = 0;
 }
 </string>
           </argument>
@@ -341,6 +363,10 @@ if(keyboard_check_pressed(vk_enter)) {game_restart();}
         }
     }
 }
+*/
+draw_set_valign(fa_top);
+draw_set_halign(fa_left);
+draw_text_colour(0,64,instance_number(obj_force),white,white,white,white,1);
 /******************* HEALTH ******************/
 draw_rectangle_colour(0,hv-36,wv,hv,0,0,0,0,false);
 
@@ -469,6 +495,22 @@ for(var i = 0; i &lt; 4; i++){
         draw_sprite(spr_skill_usable,skillAnimation[i,1],skillX,skillY);
     }*/
 }
+for (var i = 0; i &lt; array_length_1d(hotbarSurface); i++) {
+    if (skillAnimation[i,0]) {
+        if (!surface_exists(hotbarSurface[i])) {
+            hotbarSurface[i] = surface_create(64,64);
+        }
+        else {
+            skillID = i+(20+(global.class*4));
+            draw_surface(hotbarSurface[i],((wv/2)+(i*80))-152,hv-100);
+            surface_set_target(hotbarSurface[i]);
+            draw_sprite_ext(spr_skills,skillID,0,0,2,2,0,white,1);
+            draw_sprite(spr_skill_usable,0,-25+skillAnimation[i,1],-25+skillAnimation[i,1]);
+            surface_reset_target();
+            
+        }
+    }
+}
 /******************* POTIONS ******************/
 draw_set_valign(fa_bottom);
 draw_set_halign(fa_left);
@@ -488,23 +530,6 @@ draw_set_alpha(1);
 draw_text_colour(((wv/2)+320)-150,hv-36,global.SPPotion,white,white,white,white,1);
 if(global.SPPotionCooldown &gt; -39 &amp;&amp; global.SPPotionCooldown &lt; 0) {
     draw_sprite(spr_skill_usable,-global.SPPotionCooldown,((wv/2)+320)-152,hv-100);
-}
-
-for (var i = 0; i &lt; array_length_1d(hotbarSurface); i++) {
-    if (skillAnimation[i,0]) {
-        if (!surface_exists(hotbarSurface[i])) {
-            hotbarSurface[i] = surface_create(64,64);
-        }
-        else {
-            skillID = i+(20+(global.class*4));
-            draw_surface(hotbarSurface[i],((wv/2)+(i*80))-152,hv-100);
-            surface_set_target(hotbarSurface[i]);
-            draw_sprite_ext(spr_skills,skillID,0,0,2,2,0,white,1);
-            draw_sprite(spr_skill_usable,0,-25+skillAnimation[i,1],-25+skillAnimation[i,1]);
-            surface_reset_target();
-            
-        }
-    }
 }
 /******************* BUFF ******************/
 for (var i = 0; i &lt; buffListSize; i++) {
@@ -574,22 +599,29 @@ if(systemMessageSize() &gt; 0){
     }*/
     if(systemStartFade){
         if(global.systemMessage[0,1] &gt; 0){
-            global.systemMessage[0,1] -= 10;
-            if(ds_queue_size(global.systemMessageQueue) &gt; 0){
-                if(systemMoveUp &lt; 100) {systemMoveUp += 20;}
-            }
+            global.systemMessage[0,1] -= 15;
         }
         else{
-            for(var i = 0; i &lt; global.systemMessageLength-1; i++){
-                global.systemMessage[i,0] = global.systemMessage[i+1,0];
-                global.systemMessage[i,1] = global.systemMessage[i+1,1];
+            if(ds_queue_size(global.systemMessageQueue) &gt; 0) {
+                if(systemMoveUp &lt; 16) {
+                    systemMoveUp += 2;
+                }
             }
-            //Set last value to empty
-            global.systemMessage[global.systemMessageLength-1,0] = "";
-            global.systemMessage[global.systemMessageLength-1,1] = 0;
-            systemMoveUp = 0;
+            if (systemMoveUp == 16 || ds_queue_size(global.systemMessageQueue) == 0) {
+                for(var i = 0; i &lt; global.systemMessageLength-1; i++){
+                    global.systemMessage[i,0] = global.systemMessage[i+1,0];
+                    global.systemMessage[i,1] = global.systemMessage[i+1,1];
+                }
+                //Set last value to empty
+                global.systemMessage[global.systemMessageLength-1,0] = "";
+                global.systemMessage[global.systemMessageLength-1,1] = 0;
+                systemMoveUp = 0;
+                if (global.systemMessage[global.systemMessageLength-1,0] == "") {
+                    systemStartFade = false;
+                }
+            }
         }
-        if(ds_queue_size(global.systemMessageQueue) &gt; 0){ //Grab new message from internal queue
+        if(ds_queue_size(global.systemMessageQueue) &gt; 0) { //Grab new message from internal queue
             if(global.systemMessage[global.systemMessageLength-1,0] == ""){
                 global.systemMessage[global.systemMessageLength-1,0] = string(ds_queue_dequeue(global.systemMessageQueue));
             }
@@ -601,7 +633,7 @@ if(systemMessageSize() &gt; 0){
         }
         else{
             if(i == 0 &amp;&amp; global.systemMessage[i,1] == 120){ //If message is the first 
-                systemStartFade = true; //Start the fading process
+                systemStartFade = true; //Start the fading out process
             }
         }
     }
@@ -611,7 +643,7 @@ else{
 }
 for(var j = 0; j &lt; systemMessageSize(); j++){
     //draw_text_colour(wv,(j-(systemMoveUp/100))*16,global.systemMessage[j,0],white,white,white,white,global.systemMessage[j,1]/60);
-    draw_text_colour(wv,16*(systemMessageSize()-j+(systemMoveUp/100))-32,global.systemMessage[j,0],white,white,white,white,global.systemMessage[j,1]/60);
+    draw_text_colour(wv,16*(systemMessageSize()-j)-16+systemMoveUp,global.systemMessage[j,0],white,white,white,white,global.systemMessage[j,1]/60);
 }
 /******************* WINDOWS ******************/
 if(openSkillWindow){
@@ -624,6 +656,15 @@ if(openDetailStat){
 draw_set_valign(fa_top);
 draw_set_halign(fa_left);
 draw_text_colour(0,0,string(fps)+"#"+string(fps_real),white,white,white,white,1);
+/******************* COMBO ******************/
+draw_set_font(guiFont);
+draw_set_valign(fa_top);
+draw_set_halign(fa_left);
+if (totalHits &gt; 0) {
+    draw_text_colour(0,32,string(totalPlayerDamage)+" damage!",white,white,white,white,1);
+    draw_text_colour(0,64,string(totalHits)+" hits!",white,white,white,white,1);
+}
+
 </string>
           </argument>
         </arguments>
@@ -646,11 +687,7 @@ draw_text_colour(0,0,string(fps)+"#"+string(fps_real),white,white,white,white,1)
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if(global.useLighting){
-    lightmap_update();
-    lightmap_draw();
-}
-/*for (var i = view_xview[0] div global.gridSize; i &lt; view_wview[0] div global.gridSize; i++) {
+            <string>/*for (var i = view_xview[0] div global.gridSize; i &lt; view_wview[0] div global.gridSize; i++) {
     for (var j = view_yview[0] div global.gridSize; j &lt; view_hport[0] div global.gridSize; j++) {
         draw_set_alpha(0.3);
         if (mp_grid_get_cell(global.grid,i,j) == -1) {

@@ -26,11 +26,12 @@ switch(type){
                     if(irandom(100) < useSkill(49,2)){
                         global.sp += round(damage*(useSkill(49,1)/100));
                         if(instance_exists(obj_player)){
-                            with(instance_create(obj_player.x,obj_player.y-16,obj_dmg_inc)){
-                                damage = round(other.damage*(useSkill(49,1)/100));
-                                color = aqua;
-                                font = global.damage_font;
-                                size = 2;
+                            if (displayDamage) {
+                                var dmgInd = instance_create(obj_player.x,obj_player.y-16,obj_dmg_inc);
+                                dmgInd.damage = round(damage*(useSkill(49,1)/100));
+                                dmgInd.color = aqua;
+                                dmgInd.font = global.damage_font;
+                                dmgInd.size = 2;
                             }
                         }
                     }
@@ -51,12 +52,13 @@ switch(type){
                     if(irandom(100) < useSkill(48,2)){
                         health += round(damage*(useSkill(48,1)/100));
                         if(instance_exists(obj_player)){
-                            with(instance_create(obj_player.x,obj_player.y-16,obj_dmg_inc)){
-                                damage = round(other.damage*(useSkill(48,1)/100));
-                                wait = 0;
-                                color = green;
-                                font = global.damage_font;
-                                size = 2;
+                            if (displayDamage) {
+                                var dmgInd = instance_create(obj_player.x,obj_player.y-16,obj_dmg_inc);
+                                dmgInd.damage = round(damage*(useSkill(48,1)/100));
+                                dmgInd.wait = 0;
+                                dmgInd.color = green;
+                                dmgInd.font = global.damage_font;
+                                dmgInd.size = 2;
                             }
                         }
                     }
@@ -67,36 +69,48 @@ switch(type){
                     if(global.skill[21,skillData.level] == global.skill[21,skillData.maxLevel]) {
                         health += max(1,round(damage*0.01));
                         if(instance_exists(obj_player)){
-                            with(instance_create(obj_player.x,obj_player.y-32,obj_dmg_inc)){
-                                damage = round(other.damage*0.01);
-                                wait = 0;
-                                color = green;
-                                font = global.damage_font;
-                                size = 2;
+                            if (displayDamage) {
+                                var dmgInd = instance_create(obj_player.x,obj_player.y-32,obj_dmg_inc);
+                                dmgInd.damage = round(damage*0.01);
+                                dmgInd.wait = 0;
+                                dmgInd.color = green;
+                                dmgInd.font = global.damage_font;
+                                dmgInd.size = 2;
                             }
                         }
                         global.sp += max(1,round(damage*0.01));
                         if(instance_exists(obj_player)){
-                            with(instance_create(obj_player.x,obj_player.y-16,obj_dmg_inc)){
-                                damage = round(other.damage*0.01);
-                                color = aqua;
-                                font = global.damage_font;
-                                size = 2;
+                            if (displayDamage) {
+                                var dmgInd = instance_create(obj_player.x,obj_player.y-16,obj_dmg_inc);
+                                dmgInd.damage = round(damage*0.01);
+                                dmgInd.color = aqua;
+                                dmgInd.font = global.damage_font;
+                                dmgInd.size = 2;
                             }
                         }
                     }
                 }
             }
             if(global.class == 2){
+                var str = global.mana;
+                var t = 300;
+                var chance = 49;
+                if (global.skillCooldown[1] > 300) {
+                    if (isSkillMax(29)) {
+                        str *= 2;
+                        t *= 2
+                        chance += 25;
+                    }
+                }
                 if(!other.useIce){
-                    if(irandom(4) < 1){
-                        addStatus(0,global.mana,5);
+                    if(irandom(99) < chance-25){
+                        addStatus(0,t,str);
                     }
                 }
                 else{
-                    if(irandom(4) < 3){
+                    if(irandom(99) < chance+25){
                         if(!other.isHeal) {
-                            addStatus(1,global.mana,damage);
+                            addStatus(1,t,str);
                         }
                     }
                 }
@@ -105,23 +119,30 @@ switch(type){
             knockback(self,other,0,1);
             break;
 }
-damage = max(1,round(damage*other.dmg_mod*max(1,useSkill(19,1))));
+damage = max(1,round(damage*other.dmg_mod*max(1,useSkill(19,1))*choose(0.75,1.25)));
+if (damageTimer < damageTimerMax) {
+    damageTimer += 20;
+}
+totalPlayerDamage += damage;
+totalHits++;
 if(global.class == 1){
     if(global.skillCooldown[0] > 60){
         damage = round(damage*useSkill(24,1));
     }
 }
-var dmgInd = instance_create(x+irandom(sprite_width)*choose(-1,1),y+irandom(sprite_height)*choose(-1,1),obj_dmg_inc);
-dmgInd.damage = string(damage);
-dmgInd.font = global.damage_font;
-if (isCrit) {
-    dmgInd.size = 3;
-    dmgInd.color = orange;
-}
-else {
-    dmgInd.size = 2;
-    wait = -30;
-    dmgInd.color = white;
+if (displayDamage) {
+    var dmgInd = instance_create(x+irandom(sprite_width)*choose(-1,1),y+irandom(sprite_height)*choose(-1,1),obj_dmg_inc);
+    dmgInd.damage = string(damage);
+    dmgInd.font = global.damage_font;
+    if (isCrit) {
+        dmgInd.size = 3;
+        dmgInd.color = orange;
+    }
+    else {
+        dmgInd.size = 2;
+        wait = -30;
+        dmgInd.color = white;
+    }
 }
 /*
 if(damage > enemy_max_health){

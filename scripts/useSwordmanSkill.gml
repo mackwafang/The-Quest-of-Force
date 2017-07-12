@@ -38,6 +38,7 @@ switch(key){
                                 speed = (other.i/20)+0.5;
                                 allowPierce = true;
                                 speedUp = true;
+                                inflictBleed = true;
                                 speedingRate = 1.04;
                                 sprite_index = spr_skill27_sword;
                                 direction = other.image_angle+90*(power(-1,other.i));

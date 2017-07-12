@@ -35,8 +35,8 @@ switch(key){
                                 speed = 5;
                                 direction = irandom(360);
                                 homing = true;
-                                destroyOnWall = false;
                                 dmg_mod = 0.6;
+                                destroyOnWall = false;
                                 if(isSkillMax(22)) {
                                     multiHit = true;
                                     maxHitInt = 1;

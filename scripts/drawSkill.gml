@@ -8,84 +8,82 @@ var length = array_height_2d(global.skillCoord);
 var drawInfo = false;
 var viewSkill = 0;
 for(var j = 0; j < length; j ++){
-    if(global.level >= global.skill[j,2]){
-        var preSkill, skillColor, mouseX, mouseY;
-        preSkill = global.skill[j,3];
+    var preSkill, skillColor, mouseX, mouseY;
+    preSkill = global.skill[j,3];
+    skillColor = red;
+    mouseX = xv+(global.skillCoord[j,0]*20);
+    mouseY = yv+(global.skillCoord[j,1]*20);
+    if(global.skillPoints == 0){ //Cannot learn
         skillColor = red;
-        mouseX = xv+(global.skillCoord[j,0]*20);
-        mouseY = yv+(global.skillCoord[j,1]*20);
-        if(global.skillPoints == 0){ //Cannot learn
-            skillColor = red;
+    }
+    else if (checkPrerequisite(j)){ //Can be learn
+        if(global.skill[j,0] == 0){ //Can learn, have no points invested
+            skillColor = green;
         }
-        else if (checkPrerequisite(j)){ //Can be learn
-            if(global.skill[j,0] == 0){ //Can learn, have no points invested
-                skillColor = green;
-            }
-            else if(global.skill[j,0] == global.skill[j,1]){ // Skill maxed
-                skillColor = white;
-            }
-            else{
-                skillColor = yellow; //Skill have not maxed
-            }
+        else if(global.skill[j,0] == global.skill[j,1]){ // Skill maxed
+            skillColor = white;
         }
-        if(popup_mouse_message(mouseX,mouseY,20+mouseX,20+mouseY,false)){ // if mouse is hover over
-            drawInfo = true;
-            viewSkill = j;
-            if(global.skill[j,0] != global.skill[j,1] && skillColor != red){
+        else{
+            skillColor = yellow; //Skill have not maxed
+        }
+    }
+    if(popup_mouse_message(mouseX,mouseY,20+mouseX,20+mouseY,false)){ // if mouse is hover over
+        drawInfo = true;
+        viewSkill = j;
+        if(global.skill[j,0] != global.skill[j,1] && skillColor != red){
+            if (global.level >= global.skill[j,skillData.requiredLevel]) {
                 if(mouse_check_button_pressed(mb_left) || mouse_check_button(mb_right)){ //Check mouse button pressed
                     increaseSkillLevel(j); //Increment skill level and apply effect
                     global.skill[j,skillData.requiredLevel]++;
-                    sendSystemMessage("Lv."+string(global.skill[j,0])+" "+getSkillName(j)+" learnt"); //Send Message to system
+                    //sendSystemMessage("Lv."+string(global.skill[j,0])+" "+getSkillName(j)+" learnt"); //Send Message to system
                 }
             }
-            //print("Skill "+string(viewSkill)); //Debug message
         }
-        draw_sprite_ext(spr_skillOutline,0,global.skillCoord[j,0]*32,global.skillCoord[j,1]*32,1,1,0,skillColor,1);
-        draw_set_colour(skillColor);
-        if(preSkill >= 0){
-            //Pre-requisite arrow
-            var xStart = 16+global.skillCoord[preSkill,0]*32;
-            var yStart = 16+global.skillCoord[preSkill,1]*32;
-            var xDest = 16+global.skillCoord[j,0]*32;
-            var yDest = 16+global.skillCoord[j,1]*32;
-            var xOffset = -lengthdir_x(16,point_direction(xStart,yStart,xDest,yDest));
-            var yOffset = -lengthdir_y(16,point_direction(xStart,yStart,xDest,yDest));
-            draw_line_width(xStart,yStart,xDest-lengthdir_x(24,point_direction(xStart,yStart,xDest,yDest)),yDest-lengthdir_y (24,point_direction(xStart,yStart,xDest,yDest)),5);
-            draw_arrow(xStart,yStart,xDest+xOffset,yDest+yOffset,20);
-        }
-        draw_set_colour(white);
-        draw_set_valign(fa_bottom);
-        draw_set_halign(fa_center);
-        draw_set_font(global.game_font);
-        var stringLevel;
+        //print("Skill "+string(viewSkill)); //Debug message
+    }
+    draw_sprite_ext(spr_skillOutline,0,global.skillCoord[j,0]*32,global.skillCoord[j,1]*32,1,1,0,skillColor,1);
+    draw_set_colour(skillColor);
+    if(preSkill >= 0){
+        //Pre-requisite arrow
+        var xStart = 16+global.skillCoord[preSkill,0]*32;
+        var yStart = 16+global.skillCoord[preSkill,1]*32;
+        var xDest = 16+global.skillCoord[j,0]*32;
+        var yDest = 16+global.skillCoord[j,1]*32;
+        var xOffset = -lengthdir_x(16,point_direction(xStart,yStart,xDest,yDest));
+        var yOffset = -lengthdir_y(16,point_direction(xStart,yStart,xDest,yDest));
+        draw_line_width(xStart,yStart,xDest-lengthdir_x(24,point_direction(xStart,yStart,xDest,yDest)),yDest-lengthdir_y (24,point_direction(xStart,yStart,xDest,yDest)),5);
+        draw_arrow(xStart,yStart,xDest+xOffset,yDest+yOffset,20);
+    }
+    draw_set_colour(white);
+    draw_set_valign(fa_bottom);
+    draw_set_halign(fa_center);
+    draw_set_font(global.game_font);
+    var stringLevel;
+    stringLevel = string(global.skill[j,0])+"/"+string(global.skill[j,1]);        
+    /*if(global.skill[j,0] != global.skill[j,1]){
         stringLevel = string(global.skill[j,0])+"/"+string(global.skill[j,1]);        
-        /*if(global.skill[j,0] != global.skill[j,1]){
-            stringLevel = string(global.skill[j,0])+"/"+string(global.skill[j,1]);        
-        }
-        else{
-            stringLevel = "Maxed";
-        }*/
-        if(global.skill[j,0] > 0){
-            draw_text_colour(16+global.skillCoord[j,0]*32,global.skillCoord[j,1]*32,stringLevel,white,white,white,white,1);
-        }
+    }
+    else{
+        stringLevel = "Maxed";
+    }*/
+    if(global.skill[j,0] > 0){
+        draw_text_colour(16+global.skillCoord[j,0]*32,global.skillCoord[j,1]*32,stringLevel,white,white,white,white,1);
     }
 }
 for(var i = 0; i < length; i++){
-    if(global.level >= global.skill[i,2]){
-        draw_sprite(spr_skills,i,global.skillCoord[i,0]*32,global.skillCoord[i,1]*32); //Draw image
-        if(global.skill[i,0] == 0){
-            draw_set_alpha(0.6);
-            draw_rectangle_colour(global.skillCoord[i,0]*32,global.skillCoord[i,1]*32,32+global.skillCoord[i,0]*32,32+global.skillCoord[i,1]*32,0,0,0,0,false); // Black out if does not meed requirement
-            draw_set_alpha(1);
-            /*if(global.level < global.skill[i,2]){
-                draw_set_colour(red);
-                draw_set_valign(fa_top);
-                draw_set_halign(fa_center);
-                draw_set_font(global.skillNumberFont);
-                draw_text(16+global.skillCoord[i,0]*32,16+global.skillCoord[i,1]*32,global.skill[i,2]); //Draw level required
-                draw_set_colour(white);
-            }*/
-        }
+    draw_sprite(spr_skills,i,global.skillCoord[i,0]*32,global.skillCoord[i,1]*32); //Draw image
+    if(global.skill[i,0] == 0){
+        draw_set_alpha(0.6);
+        draw_rectangle_colour(global.skillCoord[i,0]*32,global.skillCoord[i,1]*32,32+global.skillCoord[i,0]*32,32+global.skillCoord[i,1]*32,0,0,0,0,false); // Black out if does not meed requirement
+        draw_set_alpha(1);
+        /*if(global.level < global.skill[i,2]){
+            draw_set_colour(red);
+            draw_set_valign(fa_top);
+            draw_set_halign(fa_center);
+            draw_set_font(global.skillNumberFont);
+            draw_text(16+global.skillCoord[i,0]*32,16+global.skillCoord[i,1]*32,global.skill[i,2]); //Draw level required
+            draw_set_colour(white);
+        }*/
     }
 }
 if(drawInfo){
@@ -96,7 +94,7 @@ if(drawInfo){
     /********************** Additional information *************************/
     var skillString, addString;
     addString = ""
-    skillString = "Lv. "+string(global.skill[viewSkill,0])+"/"+string(global.skill[viewSkill,1])+"#"+string(global.skill[viewSkill,4])+"##";
+    skillString = string(global.skill[viewSkill,4])+"##";
     if(global.skillPoints == 0){
         skillString = string_insert("A skill points is required.##",skillString,0);
     }
@@ -165,14 +163,24 @@ if(drawInfo){
                     addString += "##Max Level Upgrade#Create sword projectile";
                 }
                 break;
+            case 26: 
+                addString = "#Bleed:#Inflict chance: 10%#Deals "+string(global.str*2)+" damage/seconds twice##Current:#Summon +"+string(global.skill[viewSkill,skillData.level]*2)+" swords#Deals "+string(useSkill(26,1)*100)+"% damage#MP Required: "+string(useSkill(viewSkill,2)+(global.skill[viewSkill,0]*10))+"
+                #Next:#Summon +"+string((global.skill[viewSkill,skillData.level]+1)*2)+" swords#Deals "+string(useSkill(26,1)*100)+"% damage#MP Required: "+string(useSkill(viewSkill,2)+(global.skill[viewSkill,0]*10))+""
+                break;
                 /**************** WZ SKILL ***************/
             case 28: 
                 addString = "Current:#Heal "+string(useSkill(viewSkill,1))+"% x 10 times MP Required: "+string(useSkill(viewSkill,2)+(global.skill[viewSkill,0]*10))+"
                 #Next: Heal "+string((useSkill(viewSkill,1)+useSkill(viewSkill,3)))+"% x 10 times#MP Required: "+string(useSkill(viewSkill,2)+((global.skill[viewSkill,0]+1)*10));
+                if (isSkillMax(viewSkill)) {
+                    addString += "##Max Level Upgrade#Heal/Attack interval +100%";
+                }
                 break;
             case 29: 
                 addString = "Current:#MP Generation +"+string(useSkill(viewSkill,1))+"#MP Required: "+string(useSkill(viewSkill,2)+(global.skill[viewSkill,0]*10))+"
                 #Next:#MP Generation +"+string(useSkill(viewSkill,1)+useSkill(viewSkill,3))+"#MP Required: "+string(useSkill(viewSkill,2)+((global.skill[viewSkill,0]+1)*10));
+                if (isSkillMax(viewSkill)) {
+                    addString += "##Max Level Upgrade#Status Effect:#+100% Damage#2x duration#+25% Inflict Chance";
+                }
                 break;
             case 30: 
                 addString = "Current:#Number of ice spikes: "+string(global.skill[viewSkill,1]*5)+"#Power:"+string(useSkill(viewSkill,1)+useSkill(viewSkill,3))+"x#MP Required: "+string(useSkill(viewSkill,2)+(global.skill[viewSkill,0]*10))+"
@@ -186,9 +194,13 @@ if(drawInfo){
                 addString = "Current:#Critical +"+string(useSkill(viewSkill,3)*global.skill[viewSkill,0])+"
                 #Next:#Critical +"+string(useSkill(viewSkill,3)*(global.skill[viewSkill,0]+1));
                 break;
-            case 37: case 38:
+            case 37:
                 addString = "Current:#Critical Damage +"+string(useSkill(viewSkill,3)*global.skill[viewSkill,0])+"
                 #Next:#Critical Damage +"+string(useSkill(viewSkill,3)*(global.skill[viewSkill,0]+1));
+                break;
+            case 38:
+                addString = "Current:#Critical Damage x"+string(1+useSkill(viewSkill,3)*global.skill[viewSkill,0])+"
+                #Next:#Critical Damage x"+string(1+useSkill(viewSkill,3)*(global.skill[viewSkill,0]+1));
                 break;
                 /**************** HP+ ***************/
             case 39: case 40: case 47: 
@@ -226,7 +238,7 @@ if(drawInfo){
                 break
         }
     }
-    else if(global.level < global.skill[viewSkill,2]){
+    if(global.level < global.skill[viewSkill,2]){
         addString = "Requires Level "+string(global.skill[viewSkill,2]);
     }
     skillString = string_insert(addString,skillString,string_length(skillString)+1); // Add in

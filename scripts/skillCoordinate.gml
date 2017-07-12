@@ -17,16 +17,16 @@ for(i = 0; i < 4; i ++){
     global.skillCoord[i+43,1] = (i+1)*2;
     /************ attack skill ************/
     switch(global.class){
-    case 0: global.skillCoord[i+20,0] = 17;
+    case 0: global.skillCoord[i+20,0] = 27;
             global.skillCoord[i+20,1] = (i+1)*2;
             break;
-    case 1: global.skillCoord[i+24,0] = 17;
+    case 1: global.skillCoord[i+24,0] = 27;
             global.skillCoord[i+24,1] = (i+1)*2;
             break;
-    case 2: global.skillCoord[i+28,0] = 17;
+    case 2: global.skillCoord[i+28,0] = 27;
             global.skillCoord[i+28,1] = (i+1)*2;
             break;
-    case 3: global.skillCoord[i+32,0] = 17;
+    case 3: global.skillCoord[i+32,0] = 27;
             global.skillCoord[i+32,1] = (i+1)*2;
             break;
     }

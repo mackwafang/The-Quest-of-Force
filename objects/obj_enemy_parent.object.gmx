@@ -79,8 +79,6 @@ prevY = y div global.gridSize;
 toX = x div global.gridSize;
 toY = y div global.gridSize;
 path = path_add();
-statusSystem = part_system_create();
-statusType = part_type_create();
 target = -1;
 alarm[0] = 60;
 </string>
@@ -105,7 +103,7 @@ alarm[0] = 60;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>part_system_destroy(statusSystem);
+            <string>ds_queue_destroy(coordinates);
 </string>
           </argument>
         </arguments>
@@ -241,8 +239,10 @@ if (enemy_health &lt;= 0) {
     else {
         enemy_health = 0;
         global.xp += expGain;
-        expGain *= healthBars;
-        goldDrop *= healthBars;
+        if (maxHealthBars &gt; 0) {
+            expGain *= maxHealthBars;
+            goldDrop *= maxHealthBars;
+        }
         sendSystemMessage("+"+string(expGain)+" XP");
         dropGold(goldDrop);
         var dropPotionChance = irandom(25);
@@ -282,8 +282,7 @@ for(i = 0; i &lt; 10; i++){
             if(statusTimer mod 60 == 0) {
                 switch(statusChange[i,0]){
                     //Fire
-                    case 0: damage = statusChange[i,2]*60;
-                            part_particles_create(statusSystem,x+irandom(4)*choose(-1,1),y+irandom(4)*choose(-1,1),statusType,1);
+                    case 0: damage = statusChange[i,2];
                             enemy_health -= damage;
                             totalDamage += damage;
                             totalFade = 5;
@@ -310,13 +309,49 @@ for(i = 0; i &lt; 10; i++){
                             }
                             totalFade = 5;
                             break;
+                    //Posion
+                    case 2: damage = statusChange[i,2]*2;
+                            enemy_health -= damage;
+                            totalDamage += damage;
+                            if(damage != 0) {
+                                with(instance_create(x+irandom_range(-16,16),y-32+irandom(8),obj_dmg_inc)){
+                                    damage = string(other.damage);
+                                    color = c_green;
+                                    font = global.damage_font;
+                                    size = 2;
+                                }
+                            }
+                            totalFade = 5;
+                            break;
+                    //Bleed
+                    case 3: damage = statusChange[i,2]*3;
+                            enemy_health -= damage;
+                            totalDamage += damage;
+                            if(damage != 0) {
+                                with(instance_create(x+irandom_range(-16,16),y-32+irandom(8),obj_dmg_inc)){
+                                    damage = string(other.damage);
+                                    color = red;
+                                    font = global.damage_font;
+                                    size = 2;
+                                }
+                            }
+                            totalFade = 5;
+                            break;
                 }
             }
             if(statusChange[i,0]) {
                 speed = 0;
                 canMove = false;
             }
-            part_particles_create(statusSystem,x+irandom(4)*choose(-1,1),y+irandom(4)*choose(-1,1),statusType,1);
+            switch(statusChange[i,0]) {
+                case 0: 
+                    part_particles_create(global.fireSystem,x+irandom(4)*choose(-1,1),y+irandom(4)*choose(-1,1),global.fireType,1);
+                    break;
+                case 1: 
+                    part_particles_create(global.iceSystem,x+irandom(4)*choose(-1,1),y+irandom(4)*choose(-1,1),global.iceType,1);
+                    break;
+            }
+            //part_particles_create(statusSystem,x+irandom(4)*choose(-1,1),y+irandom(4)*choose(-1,1),statusType,1);
             statusTimer++;
         }
     }
@@ -504,16 +539,17 @@ if(other.canDamage){
     if(other.allowPierce){ //piercing
         if(!inArray(other.pierce,id)){
             playerDealDamage(other.dmg_type,false);
+            if (other.inflictBleed) {
+                if (irandom(9) == 0) {
+                    addStatus(3,120,global.str);
+                }
+            }
             other.pierce[other.aIndex] = id;
             ++other.aIndex;
         }
     }
     else if(other.multiHit){ //multiple hit
-        if(hitInt &lt; other.maxHitInt){ //Check interval
-            hitInt++; // increment
-        }
-        else{
-            hitInt = 0; //reset counter
+        if (other.hitInt == other.maxHitInt) {
             if(other.hit &lt; other.maxHit){//increment total allowed hit
                 other.hit++;
             }
@@ -521,14 +557,19 @@ if(other.canDamage){
                 with(other) {instance_destroy();}
             }
             playerDealDamage(other.dmg_type,false);
+            if (other.inflictBleed) {
+                if (irandom(9) == 0) {
+                    addStatus(3,120,global.str);
+                }
+            }
             // deal damage
         }
     }
     else{ //normal hit
         playerDealDamage(other.dmg_type,false);
-        if (other.onFire) {
-            if (irandom(99) &lt; useSkill(33,1)){
-                addStatus(0,10,2);
+        if (other.inflictBleed) {
+            if (irandom(9) == 0) {
+                addStatus(3,120,global.str);
             }
         }
         with(other){
@@ -599,7 +640,7 @@ enemyDealDamage(0);
         <exetype>2</exetype>
         <functionname></functionname>
         <codestring></codestring>
-        <whoName>self</whoName>
+        <whoName>other</whoName>
         <relative>0</relative>
         <isnot>0</isnot>
         <arguments>
@@ -625,14 +666,15 @@ if(alert != 0) {
     draw_sprite(spr_alert,alert,xx,yy-40);
 }
 */
-
+draw_set_valign(fa_bottom);
+draw_set_halign(fa_center);
 draw_text_colour(xx,yy-26,"Lv."+string(level),white,white,white,white,1);
 draw_set_alpha(min((-point_distance(x,y,mouse_x,mouse_y)/64)+1,1));
 if (healthBars &gt; 0) {
-    draw_set_valign(fa_center);
+    draw_set_valign(fa_top);
     draw_set_halign(fa_right);
     draw_set_colour(white);
-    draw_text(xx-12,yy-21,healthBars);
+    draw_text(xx-6,yy-21,healthBars);
     draw_set_colour(white);
     draw_rectangle_colour(xx-12,yy-16,xx+20,yy-26,0,0,0,0,false);
     draw_rectangle_colour(xx-10,yy-18,xx-10+(healthShow/100)*28,yy-24,red,red,red,red,false);

@@ -70,41 +70,12 @@
     <script>scripts\findAllSkillPoints.gml</script>
     <script>scripts\meleeAttack.gml</script>
     <script>scripts\setAllSkills.gml</script>
-    <scripts name="JustF">
-      <script>scripts\lightmap_init.gml</script>
-      <script>scripts\lightmap_draw.gml</script>
-      <script>scripts\lightmap_update.gml</script>
-      <script>scripts\lightmap_resize.gml</script>
-      <script>scripts\lightmap_set_ambient.gml</script>
-      <script>scripts\lightmap_set_light_parent_object.gml</script>
-      <script>scripts\lightmap_set_caster_parent_object.gml</script>
-      <script>scripts\lightmap_set_shadows_enabled.gml</script>
-      <script>scripts\lightmap_move_with_view.gml</script>
-      <script>scripts\lightmap_set_shadow_size.gml</script>
-      <script>scripts\lightmap_draw_shadow.gml</script>
-      <script>scripts\light_init_point.gml</script>
-      <script>scripts\light_init_sprite.gml</script>
-      <script>scripts\light_set_radius.gml</script>
-      <script>scripts\light_set_color.gml</script>
-      <script>scripts\light_set_type.gml</script>
-      <script>scripts\light_set_sprite.gml</script>
-      <script>scripts\light_set_rotation.gml</script>
-      <script>scripts\light_set_sprite_index.gml</script>
-      <script>scripts\light_set_height.gml</script>
-      <script>scripts\caster_init_polygon.gml</script>
-      <script>scripts\caster_init_sprite.gml</script>
-      <script>scripts\caster_init_rectangle.gml</script>
-      <script>scripts\caster_init_circle.gml</script>
-      <script>scripts\caster_add_point.gml</script>
-      <script>scripts\caster_draw_debug.gml</script>
-      <script>scripts\caster_set_height.gml</script>
-    </scripts>
     <script>scripts\sendSystemMessage.gml</script>
     <script>scripts\systemMessageSize.gml</script>
     <script>scripts\heal.gml</script>
     <script>scripts\addStatus.gml</script>
     <script>scripts\calculateTotalXP.gml</script>
-    <script>scripts\fireballParticleInit.gml</script>
+    <script>scripts\fireParticleInit.gml</script>
     <script>scripts\forceParticleInit.gml</script>
     <script>scripts\iceParticleInit.gml</script>
     <script>scripts\electricParticleInit.gml</script>

@@ -33,20 +33,19 @@ expGain = level*10;
 equipWeapon = false;
 stam = round(3*sin(level)+(3*level));
 mana = stam div 2;
-enemy_max_health = round(20*cos(level)+(35*level))+(level*75);
+enemy_max_health = round(10*cos(level)+(35*level))+(level*75);
 goldDrop = (level div 5)+global.luck;
 minSpotFov = 30;
 minSpotRange = 128;
 maxSpotFov = 60;
 maxSpotRange = 256;
 enemy_health = enemy_max_health;
-maxHealthBars = 90;
+maxHealthBars = 90
 healthBars = maxHealthBars;
-if (irandom(10) == 0) {
-    maxHealthBars = ceil(level/2)+irandom(40);
+/*if (irandom(10) == 0) {
+    maxHealthBars = ceil(level/2)+irandom(10);
     healthBars = maxHealthBars;
 }
-addStatus(1,1,1);
 </string>
           </argument>
         </arguments>

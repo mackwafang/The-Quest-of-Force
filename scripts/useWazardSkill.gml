@@ -17,7 +17,12 @@ switch(key){
                             image_yscale = 0;
                             isHeal = true;
                             multiHit = true;
-                            maxHitInt = 30;
+                            if (isSkillMax(28)) {
+                                maxHitInt = 15;
+                            }
+                            else {
+                                maxHitInt = 30;
+                            }
                             hitInt = 0;
                             destroyOnWall = false;
                             maxHit = 9999;

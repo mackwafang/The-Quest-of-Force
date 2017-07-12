@@ -36,11 +36,16 @@ draw_text(96,288,"+"+string(global.hpGen));
 draw_text(96,320,global.maxSP);
 draw_text(96,352,"+"+string(global.spGen));
 
-draw_text(320,96,"Critical: "+string(global.crit)+"%");
-draw_text(320,128,"Crit. Damage: "+string(global.critAtt));
-draw_text(320,160,"Armour Pen.: +"+string(useSkill(19,1)*100)+"%");
-draw_text(320,192,"Movement: "+string(2+useSkill(41,1)));
-draw_text(320,256,"Special Attack#MP Cost: "+string(max(1,round(global.level/10)))+" MP");
+var phyDmg = global.str*max(1,useSkill(19,1));
+var magDmg = global.mana*max(1,useSkill(19,1));
+draw_text(320,96,"Phy Att:#"+string(round(phyDmg*0.75))+"-"+string(round(phyDmg*1.25)));
+draw_text(320,160,"Mag Att:#"+string(round(magDmg*0.75))+"-"+string(round(magDmg*1.25)));
+
+draw_text(544,96,"Critical: "+string(global.crit)+"%");
+draw_text(544,128,"Crit. Damage: "+string(global.critAtt));
+draw_text(544,160,"Armour Pen.: +"+string(useSkill(19,1)*100)+"%");
+draw_text(544,192,"Movement: "+string(2+useSkill(41,1)));
+draw_text(544,256,"Special Attack#MP Cost: "+string(max(1,round(global.level/10)))+" MP");
 
 draw_sprite_ext(spr_drop_item,0,64,hv-96,4,4,0,white,1);
 draw_text(96,hv-96,string(global.gold));
