@@ -29,7 +29,6 @@
 canMove = true;
 //shader = shader_get_uniform(shd_motionBlur,"pos");
 image_speed = 0;
-friction = 0.1;
 moveSpeed = 1;
 level = 1;
 str = 0;
@@ -126,31 +125,33 @@ alarm[0] = 60;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>goX = irandom(room_width);
-goY = irandom(room_height);
-if(!place_free(goX,goY)){
+            <string>if (alert != 2) {
     goX = irandom(room_width);
     goY = irandom(room_height);
-}
-if(ds_queue_size(coordinates) == 0) {ds_queue_enqueue(coordinates,goX,goY);}
-
-if(canMove){
-    if(ds_queue_size(coordinates) &gt; 0){
-        goX = ds_queue_dequeue(coordinates);
-        goY = ds_queue_dequeue(coordinates);
-        if(irandom(10) &lt; 1){
-            var newX, newY;
-            newX = irandom(room_width);
-            newY = irandom(room_height);
-            if(!place_free(newX,newY)){
+    if(!place_free(goX,goY)){
+        goX = irandom(room_width);
+        goY = irandom(room_height);
+    }
+    if(ds_queue_size(coordinates) == 0) {ds_queue_enqueue(coordinates,goX,goY);}
+    
+    if(canMove){
+        if(ds_queue_size(coordinates) &gt; 0){
+            goX = ds_queue_dequeue(coordinates);
+            goY = ds_queue_dequeue(coordinates);
+            if(irandom(10) &lt; 1){
+                var newX, newY;
                 newX = irandom(room_width);
                 newY = irandom(room_height);
+                if(!place_free(newX,newY)){
+                    newX = irandom(room_width);
+                    newY = irandom(room_height);
+                }
+                ds_queue_enqueue(coordinates,newX,newY);
             }
-            ds_queue_enqueue(coordinates,newX,newY);
         }
     }
+    alarm[0] = 300;
 }
-alarm[0] = 300;
 </string>
           </argument>
         </arguments>
@@ -207,25 +208,31 @@ else{
         wipeTime --;
     }
     else{
-        healthShow = var_wipe(healthShow,enemy_health,enemy_max_health,0,2);
+        if (healthShow &gt; enemy_health/enemy_max_health) {
+            healthShow = var_wipe(healthShow,enemy_health,enemy_max_health,0,2);
+        }
+        else {
+            healthShow = 100;
+        }
     }
 }
-image_angle = direction;
-if (alert == 0) {
+if (kbTime == 0) {
+    image_angle = direction;
+}
+if (alert != 2) {
     if(canMove &amp;&amp; place_free(goX,goY)){
         if(point_distance(x,y,goX,goY) &gt; 10){
-            //direction = point_direction(x,y,goX,goY);
-            //speed = moveSpeed;
-            mp_grid_clear_cell(global.grid,x div global.gridSize, y div global.gridSize);
+            /*mp_grid_clear_cell(global.grid, x div global.gridSize, y div global.gridSize);
             var pathFound = mp_grid_path(global.grid,path,x,y,goX,goY,true);
-            var xx = path_get_x(path,1/max(1,path_get_number(path)));
-            var yy = path_get_y(path,1/max(1,path_get_number(path)));
-            direction = point_direction(x,y,xx,yy);
+            var xx = path_get_point_x(path,1);
+            var yy = path_get_point_y(path,1);*/
+            direction = point_direction(x,y,goX,goY);
             speed = moveSpeed;
         }
-        else{
+        else {
+            speed = 0;
             repeat(2) ds_queue_dequeue(coordinates);
-        }
+        }        
     }
 }
 if (fire &lt; 1) {fire++;}
@@ -356,7 +363,6 @@ for(i = 0; i &lt; 10; i++){
         }
     }
 }
-knockbackPerform();
 if(instance_exists(obj_player)) {target = obj_player;}
 /***************** MELEE ATTACK ****************/
 if(equipWeapon) {
@@ -373,15 +379,17 @@ if(equipWeapon) {
 }
 if(canMove){
     if(inViewRange(self,target,spotFov)){
-        if(point_distance(x,y,target.x,target.y) &lt; spotRange){
+        if(point_distance(x,y,target.x,target.y) &lt;= spotRange){
             alert = 2;
             alertTime = 300;
         }
     }
     else if(instance_exists(obj_force)) { 
         if(inViewRange(self,obj_force,spotFov)) {
-            alert = 1;
-            alertTime = 600;
+            if (point_distance(x,y,obj_force.x,obj_force.y) &lt;= spotRange) {
+                alert = 1;
+                alertTime = 600;
+            }
         }
     }
     if(alertTime &gt; 0){
@@ -406,35 +414,28 @@ if(canMove){
         case 2: spotRange = var_wipe(spotRange,maxSpotRange,100,alertRate,0);
                 spotFov = var_wipe(spotFov,maxSpotFov,100,alertRate,0);
                 if (instance_exists(obj_player)) { 
-                    if(kbTime == 0){
-                        mp_grid_clear_cell(global.grid,x div global.gridSize, y div global.gridSize);
-                        mp_grid_clear_cell(global.grid,obj_player.x div global.gridSize, obj_player.y div global.gridSize);
-                        var pathFound = mp_grid_path(global.grid,path,x,y,obj_player.x,obj_player.y,true);
-                        if (pathFound) {
-                            var xx = path_get_x(path,1/max(1,path_get_number(path)));
-                            var yy = path_get_y(path,1/max(1,path_get_number(path)));
-                            direction = point_direction(x,y,xx,yy);
-                            if(object_index != obj_enemy_wizard) {
-                                speed = moveSpeed;
+                    if(kbTime == 0) {
+                        direction = point_direction(x,y,obj_player.x,obj_player.y);
+                        if(object_index != obj_enemy_wizard) {
+                            speed = moveSpeed;
+                        }
+                        else {
+                            if(distance_to_object(target) &gt; 128) {
+                                speed = moveSpeed/2;
                             }
                             else {
-                                if(distance_to_object(target) &gt; 128) {
-                                    speed = moveSpeed/2;
-                                }
-                                else {
-                                    if(fire &gt; 0) {
-                                        fire -= 40;
-                                        with(instance_create(x,y,obj_enemy_force)) {
-                                            direction = point_direction(x,y,other.target.x,other.target.y);
-                                            speed = 4;
-                                            dmg_type = 1;
-                                            critRate = other.critRate;
-                                            critDamage = other.critDamage;
-                                            damage = other.mana;
-                                            dmg_mod = 2;
-                                            isMagic = true;
-                                            visible = false;
-                                        }
+                                if(fire &gt; 0) {
+                                    fire -= 40;
+                                    with(instance_create(x,y,obj_enemy_force)) {
+                                        direction = point_direction(x,y,other.target.x,other.target.y);
+                                        speed = 4;
+                                        dmg_type = 1;
+                                        critRate = other.critRate;
+                                        critDamage = other.critDamage;
+                                        damage = other.mana;
+                                        dmg_mod = 2;
+                                        isMagic = true;
+                                        visible = false;
                                     }
                                 }
                             }
@@ -448,6 +449,7 @@ if(canMove){
                 break;
     }
 }
+knockbackPerform();
 </string>
           </argument>
         </arguments>
@@ -519,22 +521,17 @@ speed = 0;
           <argument>
             <kind>1</kind>
             <string>if(alert != 2) {
-    direction = -other.direction;
     //Make stay in place
-    goX = x;
-    goY = y;
     ds_queue_clear(coordinates);
-    alarm[0] = 60;
-    alertTime = 600;
-    alert = 1;
+    for(var i = 0; i &lt; 10; i++){
+        ds_queue_enqueue(coordinates,x+lengthdir_x(i*10,point_direction(x,y,other.x,other.y)));
+        ds_queue_enqueue(coordinates,y+lengthdir_y(i*10,point_direction(x,y,other.x,other.y)));
+    }
+    alarm[0] = 1;
+    alertTime = 120;
+    alert = 2;
 }
-image_angle = other.direction;
 wipeTime = 30;
-ds_queue_clear(coordinates);
-for(var i = 0; i &lt; 10; i++){
-    ds_queue_enqueue(coordinates,x+lengthdir_x(i*10,point_direction(x,y,other.x,other.y)));
-    ds_queue_enqueue(coordinates,y+lengthdir_y(i*10,point_direction(x,y,other.x,other.y)));
-}
 if(other.canDamage){
     if(other.allowPierce){ //piercing
         if(!inArray(other.pierce,id)){
@@ -674,7 +671,7 @@ if (healthBars &gt; 0) {
     draw_set_valign(fa_top);
     draw_set_halign(fa_right);
     draw_set_colour(white);
-    draw_text(xx-6,yy-21,healthBars);
+    draw_text(xx-6,yy-21,healthBars+1);
     draw_set_colour(white);
     draw_rectangle_colour(xx-12,yy-16,xx+20,yy-26,0,0,0,0,false);
     draw_rectangle_colour(xx-10,yy-18,xx-10+(healthShow/100)*28,yy-24,red,red,red,red,false);
@@ -722,6 +719,11 @@ if(equipWeapon) {
     weapon_x = lengthdir_x(8,image_angle);
     weapon_y = lengthdir_y(8,image_angle);
     draw_sprite_ext(weaponImage,0,x+weapon_x,y+weapon_y,weaponSide,1,weaponAngle,white,1);
+}
+/*draw_line_width(x,y,x+lengthdir_x(spotRange,spotFov+image_angle),y+lengthdir_y(spotRange,spotFov+image_angle),2);
+draw_line_width(x,y,x+lengthdir_x(spotRange,-spotFov+image_angle),y+lengthdir_y(spotRange,-spotFov+image_angle),2);
+for (var i = -spotFov; i &lt;= spotFov; i++) {
+    draw_line_width(x+lengthdir_x(spotRange,i+image_angle),y+lengthdir_y(spotRange,i+image_angle),x+lengthdir_x(spotRange,i+1+image_angle),y+lengthdir_y(spotRange,i+1+image_angle),2);
 }
 //shader_reset();
 </string>

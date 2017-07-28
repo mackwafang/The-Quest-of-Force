@@ -13,18 +13,17 @@ for(var j = 0; j < length; j ++){
     skillColor = red;
     mouseX = xv+(global.skillCoord[j,0]*20);
     mouseY = yv+(global.skillCoord[j,1]*20);
-    if(global.skillPoints == 0){ //Cannot learn
-        skillColor = red;
-    }
-    else if (checkPrerequisite(j)){ //Can be learn
-        if(global.skill[j,0] == 0){ //Can learn, have no points invested
-            skillColor = green;
-        }
-        else if(global.skill[j,0] == global.skill[j,1]){ // Skill maxed
-            skillColor = white;
-        }
-        else{
-            skillColor = yellow; //Skill have not maxed
+    if (global.skillPoints > 0) {
+        if (checkPrerequisite(j)){ //Can be learn
+            if(global.skill[j,0] == 0){ //Can learn, have no points invested
+                skillColor = green;
+            }
+            else if(global.skill[j,0] == global.skill[j,1]){ // Skill maxed
+                skillColor = white;
+            }
+            else{
+                skillColor = yellow; //Skill have not maxed
+            }
         }
     }
     if(popup_mouse_message(mouseX,mouseY,20+mouseX,20+mouseY,false)){ // if mouse is hover over
@@ -84,6 +83,12 @@ for(var i = 0; i < length; i++){
             draw_text(16+global.skillCoord[i,0]*32,16+global.skillCoord[i,1]*32,global.skill[i,2]); //Draw level required
             draw_set_colour(white);
         }*/
+    }
+    if (!checkPrerequisite(i)) {
+        draw_set_valign(fa_center);
+        draw_set_halign(fa_middle);
+        draw_set_font(guiFont);
+        draw_text_colour(16+global.skillCoord[i,0]*32,16+global.skillCoord[i,1]*32,global.skill[i,skillData.requiredLevel],red,red,red,red,1);
     }
 }
 if(drawInfo){
@@ -245,14 +250,21 @@ if(drawInfo){
     var wBreak = 256;
     var sepBreak = 16
     var backY = string_height_ext(skillString,sepBreak,wBreak)+16;//background's y
-    draw_rectangle(xInfo,yInfo,xInfo+272,yInfo+backY,false); //Draw background
-    draw_line_width_colour(xInfo,yInfo,xInfo+272,yInfo,3,0,0);
+    var side = 1;
+    if (window_mouse_get_x() > view_wport[0]-272) {
+        side = -1;
+    }
+    draw_rectangle(xInfo,yInfo,xInfo+272*side,yInfo+backY,false); //Draw background
+    draw_line_width_colour(xInfo,yInfo,xInfo+272*side,yInfo,3,0,0);
     draw_line_width_colour(xInfo,yInfo,xInfo,yInfo+backY,3,0,0);
-    draw_line_width_colour(xInfo,yInfo+backY,xInfo+272,yInfo+backY,3,0,0);
-    draw_line_width_colour(xInfo+272,yInfo,xInfo+272,yInfo+backY,3,0,0);
+    draw_line_width_colour(xInfo,yInfo+backY,xInfo+272*side,yInfo+backY,3,0,0);
+    draw_line_width_colour(xInfo+272*side,yInfo,xInfo+272*side,yInfo+backY,3,0,0);
     draw_set_valign(fa_top);
     draw_set_halign(fa_left);
-    draw_text_ext_colour(xInfo+8,yInfo+8,skillString,sepBreak,wBreak,0,0,0,0,1);
+    if (side == -1) {
+        draw_set_halign(fa_right);
+    }
+    draw_text_ext_colour(xInfo+8*side,yInfo+8,skillString,sepBreak,wBreak,0,0,0,0,1);
 }
 draw_set_font(global.game_font);
 draw_set_valign(fa_top);

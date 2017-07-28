@@ -119,7 +119,7 @@ if(canMove){
             hspeed += moveSpeed/2;
         }
     }
-    mp_grid_add_cell(global.grid,x div global.gridSize, y div global.gridSize);
+    //mp_grid_add_cell(global.grid,x div global.gridSize, y div global.gridSize);
     /******************** Melee ********************/
     if(fire &lt; 1){
         fire++;
@@ -200,8 +200,8 @@ if(canMove){
                         else if (global.class == 3) {
                             dmg_type = 0;
                             if (global.skillCooldown[0] &gt; 60) {
-                                dmg_mod += 1;
-                                speed *= 2;
+                                dmg_mod += 2;
+                                speed *= 3;
                             }
                             if (global.skillCooldown[1] &gt; 300) {
                                 onFire = true;

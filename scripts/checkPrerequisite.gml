@@ -1,9 +1,8 @@
 ///checkPrerequisite(skill)
-skill = argument0;
-preSkill = global.skill[skill,3];
-if(preSkill == -1) {
-    return true;
+var skill = argument0;
+var preSkill = global.skill[skill,3];
+var checkLevel = global.level >= global.skill[skill,skillData.requiredLevel];
+if (preSkill == -1) {
+    return checkLevel
 }
-else{
-    return (global.skill[preSkill,0] != 0);
-}
+return (global.skill[preSkill,skillData.level] > 0 && checkLevel);

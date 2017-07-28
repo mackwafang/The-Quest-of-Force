@@ -30,17 +30,23 @@ image_index = 1;
 level = global.level
 expGain = level*15;
 equipWeapon = true;
-stam = round(3*sin(level)+(2.5*level));
+stam = (power(level,2)/20)-8;
 mana = round(stam*0.75);
-str = stam+1;
-enemy_max_health = round(12*cos(level)+(85*level))+(level*100);
+str = round(power(level,2)/50)+10;
+enemy_max_health = round(4500*sin(level/30)+power(level,2));
 goldDrop = (level div 5)+global.luck;
-moveSpeed = 1.2;
+moveSpeed = 0.9;
 minSpotFov = 30;
 minSpotRange = 128;
 maxSpotFov = 60;
 maxSpotRange = 256;
 enemy_health = enemy_max_health;
+if (irandom(10) == 0) {
+    maxHealthBars = ceil(level/4);
+    str *= 2;
+    stam *= 1.5;
+    healthBars = maxHealthBars;
+}
 </string>
           </argument>
         </arguments>

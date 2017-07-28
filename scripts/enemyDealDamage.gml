@@ -40,6 +40,8 @@ else {
     }
 }
 with(obj_player){
+    healthGen -= 30;
+    manaGen -= 30;
     totalDamage += damage;
     health -= damage;
 }

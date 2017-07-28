@@ -19,7 +19,7 @@
         <exetype>2</exetype>
         <functionname></functionname>
         <codestring></codestring>
-        <whoName>self</whoName>
+        <whoName>other</whoName>
         <relative>0</relative>
         <isnot>0</isnot>
         <arguments>
@@ -37,27 +37,29 @@
 }
 
 global.gridSize = 16;
-global.grid = mp_grid_create(0,0,room_width div global.gridSize,room_height div global.gridSize,global.gridSize,global.gridSize);
-mp_grid_add_instances(global.grid,obj_wall,false);
+//global.grid = mp_grid_create(0,0,room_width div global.gridSize,room_height div global.gridSize,global.gridSize,global.gridSize);
+//mp_grid_add_instances(global.grid,obj_wall,false);
 
 global.class = 0;
-global.str = 10;
-global.stam = 10;
-global.mana = 5;
-global.luck = 10;
+global.str = 0;
+global.stam = 0;
+global.mana = 0;
+global.luck = 0;
 global.crit = 5;
 global.critAtt = 22;
 global.meleeRange = 40;
 
 global.level = 1;
+global.minDmg = 0.75;
+global.maxDmg = 1.25;
 global.maxHP = 40;
 global.maxSP = 30;
 global.hpGen = 0;
 global.spGen = 0;
 global.sp = global.maxSP;
-global.xp = calculateTotalXP(100);
+global.xp = calculateTotalXP(300);
 global.maxXP = 10;
-global.gold = 0;
+global.gold = 100;
 global.HPPotion = 5;
 global.SPPotion = 5;
 global.HPPotionCooldown = 0;
@@ -68,8 +70,48 @@ global.game_font = font_add_sprite(spr_game_font,ord(" "),true,0);
 global.skillNumberFont = font_add_sprite(spr_skill_level_required,ord("0"),false,0);
 guiFont = font_add_sprite(spr_gui_font,ord("!"),true,0);
 skillFont = font_add_sprite(spr_skill_font,ord(" "),true,2);
-statFont = font_add_sprite(spr_stat_font,ord(" "),true,0);
+statFont = font_add_sprite_ext(spr_stat_font,".0123456789",true,0);
 buffFont = font_add_sprite(spr_buff_font,ord(" "),true,0);
+comboFont = font_add_sprite_ext(spr_combo_font,"0123456789",true,0);
+/********************* EQUIP SLOT ******************/
+enum equipKind {
+    top = 0,
+    bottom = 1,
+    shoes = 2,
+    gloves = 3,
+    hat = 4,
+    weapon = 5
+}
+enum equipData {
+    name = 0,
+    str = 1,
+    stam = 2,
+    mana = 3,
+    luck = 4,
+    hp = 5,
+    sp = 6,
+    minDmg = 7,
+    maxDmg = 8,
+    crit = 9,
+    critDmg = 10,
+    classRestriction = 11,
+    value = 12
+}
+for (var i = 0; i &lt; 6; i++) {
+    global.equipment[i,equipData.name] = "";
+    global.equipment[i,equipData.str] = 0;
+    global.equipment[i,equipData.stam] = 0;
+    global.equipment[i,equipData.mana] = 0;
+    global.equipment[i,equipData.luck] = 0;
+    global.equipment[i,equipData.hp] = 0;
+    global.equipment[i,equipData.sp] = 0;
+    global.equipment[i,equipData.minDmg] = 0;
+    global.equipment[i,equipData.maxDmg] = 0;
+    global.equipment[i,equipData.crit] = 0;
+    global.equipment[i,equipData.critDmg] = 0;
+    global.equipment[i,equipData.classRestriction] = -1;
+    global.equipment[i,equipData.value] = 0;
+}
 /********************* SKILLS ******************/
 global.skillCooldown[0] = 0;
 global.skillCooldown[1] = 0;
@@ -129,9 +171,10 @@ globalvar displayDamage, quality;
 displayDamage = true;
 quality = 0;
 
-globalvar totalHits, totalPlayerDamage, damageTimer, damageTimerMax;
+globalvar totalHits, totalPlayerDamage, damageTimer, damageTimerMax, damageSize;
 damageTimerMax = 180;
 damageTimer = 0;
+damageSize = 1;
 totalHits = 0;
 totalPlayerDamage = 0;
 
@@ -172,23 +215,28 @@ xpMove = var_wipe(xpMove,global.xp,global.maxXP,0.2,0);
 global.sp = clamp(global.sp,0,global.maxSP);
 health = clamp(health,0,global.maxHP);
 /******************* HP GEN ************************/
-global.hpGen = 0.1+min(100,global.stam div 5);
+global.hpGen = 2+min(100,(global.stam+getAllEquipmentBonus(equipData.stam)) div 5);
 global.hpGen += useSkill(39,1);
 global.hpGen += useSkill(40,1);
 global.hpGen += useSkill(47,1);
 /******************* SP GEN ************************/
-global.spGen = 0.1+min(100,global.mana div 5)
+global.spGen = 2+min(100,(global.mana+getAllEquipmentBonus(equipData.mana)) div 5)
 global.spGen += useSkill(16,1);
 global.spGen += useSkill(17,1);
 global.spGen += useSkill(18,1);
 /******************* CRITICAL ************************/
-global.critAtt = ((global.str+global.mana) div 20);
+global.critAtt = 22+((global.str+global.mana) div 20);
 global.critAtt += useSkill(37,1);
+global.critAtt += getAllEquipmentBonus(equipData.crit);
+global.critAtt += useSkill(53,2);
 if (global.skill[38,skillData.level] &gt; 0) {
     global.critAtt *= useSkill(38,1);
 }
-
-for (var k = 0; k &lt; instance_number(obj_enemy_parent); k ++) {
+/******************* Minimum damage ************************/
+global.minDmg = 0.75+useSkill(53,1)+useSkill(54,1)+useSkill(55,1)+useSkill(56,1)+getAllEquipmentBonus(equipData.minDmg);
+/******************* Maxmimum damage ************************/
+global.maxDmg = 1.25+useSkill(53,1)+useSkill(57,1)+useSkill(58,1)+useSkill(59,1)+getAllEquipmentBonus(equipData.maxDmg);
+/*for (var k = 0; k &lt; instance_number(obj_enemy_parent); k ++) {
     var enemy = instance_find(obj_enemy_parent,k);
     var xx = enemy.x div global.gridSize;
     var yy = enemy.y div global.gridSize;
@@ -206,7 +254,7 @@ for (var j = 0; j &lt; room_height div global.gridSize; j++) {
             }
         }
     }
-}
+}*/
 /*if(keyboard_check_pressed(vk_left)){
     room = global.dungeonRooms[--global.currentRoomX,global.currentRoomY];
 }
@@ -364,9 +412,6 @@ if(keyboard_check_pressed(vk_enter)) {game_restart();}
     }
 }
 */
-draw_set_valign(fa_top);
-draw_set_halign(fa_left);
-draw_text_colour(0,64,instance_number(obj_force),white,white,white,white,1);
 /******************* HEALTH ******************/
 draw_rectangle_colour(0,hv-36,wv,hv,0,0,0,0,false);
 
@@ -436,15 +481,16 @@ draw_primitive_end();
 draw_text_transformed_colour(wv-5,hv-22,string(round(global.sp)),1.5,1.5,0,white,white,white,white,1);
 /******************* XP ******************/
 draw_set_font(global.game_font);
-draw_set_valign(fa_bottom);
-draw_set_halign(fa_center);
-draw_text_colour(wv/2,hv-12,global.level,white,white,white,white,1);
 draw_rectangle_colour(0,hv-2,xpMove*wv/100,hv-12,green,green,green,green,false);
 draw_set_valign(fa_bottom);
 draw_set_halign(fa_left);
 draw_text_colour(0,hv+2,string(global.xp)+"/"+string(global.maxXP),$FFFFFF,$FFFFFF,$FFFFFF,$FFFFFF,1);
 draw_set_halign(fa_right);
 draw_text_colour(wv,hv+2,string((global.xp/global.maxXP)*100)+"%",$FFFFFF,$FFFFFF,$FFFFFF,$FFFFFF,1);
+draw_set_font(statFont);
+draw_set_valign(fa_top);
+draw_set_halign(fa_center);
+draw_text_colour(wv/2,hv-36,global.level,white,white,white,white,1);
 /******************* STAT ******************/
 draw_sprite(spr_stat,0,16,hv-80);
 draw_sprite(spr_stat,1,16,hv-48);
@@ -515,19 +561,31 @@ for (var i = 0; i &lt; array_length_1d(hotbarSurface); i++) {
 draw_set_valign(fa_bottom);
 draw_set_halign(fa_left);
 draw_sprite(spr_potions,0,((wv/2)-80)-152,hv-100);
-draw_set_alpha(0.9);
-draw_rectangle_colour(((wv/2)-80)-88,hv-36-(max(0,global.HPPotionCooldown)/300)*64,((wv/2)-80)-152,hv-36,0,0,0,0,false);
-draw_set_alpha(1);
 draw_text_colour(((wv/2)-80)-120,hv-36,global.HPPotion,white,white,white,white,1);
+draw_set_alpha(0.9);
+draw_rectangle_colour(((wv/2)-80)-88,hv-36-(max(0,global.HPPotionCooldown)/600)*64,((wv/2)-80)-152,hv-36,0,0,0,0,false);
+draw_set_alpha(1);
+if (global.HPPotionCooldown &gt; 0) {
+    draw_set_valign(fa_center);
+    draw_set_halign(fa_middle);
+    draw_text_colour(((wv/2)-80)-120,hv-64,global.HPPotionCooldown div 60,white,white,white,white,1);
+}
 if(global.HPPotionCooldown &gt; -39 &amp;&amp; global.HPPotionCooldown &lt; 0) {
     draw_sprite(spr_skill_usable,-global.HPPotionCooldown,((wv/2)-80)-152,hv-100);
 }
 
+draw_set_valign(fa_bottom);
+draw_set_halign(fa_left);
 draw_sprite(spr_potions,1,((wv/2)+320)-152,hv-100);
-draw_set_alpha(0.9);
-draw_rectangle_colour(((wv/2)+320)-88,hv-36-(max(0,global.SPPotionCooldown)/300)*64,((wv/2)+320)-152,hv-36,0,0,0,0,false);
-draw_set_alpha(1);
 draw_text_colour(((wv/2)+320)-150,hv-36,global.SPPotion,white,white,white,white,1);
+draw_set_alpha(0.9);
+draw_rectangle_colour(((wv/2)+320)-88,hv-36-(max(0,global.SPPotionCooldown)/600)*64,((wv/2)+320)-152,hv-36,0,0,0,0,false);
+draw_set_alpha(1);
+if (global.SPPotionCooldown &gt; 0) {
+    draw_set_valign(fa_center);
+    draw_set_halign(fa_middle);
+    draw_text_colour(((wv/2)+320)-120,hv-64,global.SPPotionCooldown div 60,white,white,white,white,1);
+}
 if(global.SPPotionCooldown &gt; -39 &amp;&amp; global.SPPotionCooldown &lt; 0) {
     draw_sprite(spr_skill_usable,-global.SPPotionCooldown,((wv/2)+320)-152,hv-100);
 }
@@ -537,7 +595,7 @@ for (var i = 0; i &lt; buffListSize; i++) {
     var yy = 16+((i div 10)*34);
     if (buffList[i,buffListData.sprite] != -1) {
         draw_sprite(spr_buffs,buffList[i,buffListData.sprite],xx,yy);
-        draw_set_valign(fa_bottom);
+        draw_set_valign(fa_top);
         draw_set_halign(fa_right);
         draw_set_font(buffFont);
         var time = buffList[i,buffListData.time] div 60;
@@ -599,7 +657,7 @@ if(systemMessageSize() &gt; 0){
     }*/
     if(systemStartFade){
         if(global.systemMessage[0,1] &gt; 0){
-            global.systemMessage[0,1] -= 15;
+            global.systemMessage[0,1] -= 10;
         }
         else{
             if(ds_queue_size(global.systemMessageQueue) &gt; 0) {
@@ -628,11 +686,11 @@ if(systemMessageSize() &gt; 0){
         }
     }
     for(var i = 0; i &lt; global.systemMessageLength; i++){ //Fade in new messages
-        if(global.systemMessage[i,0] != "" &amp;&amp; global.systemMessage[i,1] &lt; 120){ //Not blank and timer is not maxed
+        if(global.systemMessage[i,0] != "" &amp;&amp; global.systemMessage[i,1] &lt; 300){ //Not blank and timer is not maxed
             global.systemMessage[i,1] += 5; //Fade in
         }
         else{
-            if(i == 0 &amp;&amp; global.systemMessage[i,1] == 120){ //If message is the first 
+            if(i == 0 &amp;&amp; global.systemMessage[i,1] == 300){ //If message is the first 
                 systemStartFade = true; //Start the fading out process
             }
         }
@@ -643,7 +701,7 @@ else{
 }
 for(var j = 0; j &lt; systemMessageSize(); j++){
     //draw_text_colour(wv,(j-(systemMoveUp/100))*16,global.systemMessage[j,0],white,white,white,white,global.systemMessage[j,1]/60);
-    draw_text_colour(wv,16*(systemMessageSize()-j)-16+systemMoveUp,global.systemMessage[j,0],white,white,white,white,global.systemMessage[j,1]/60);
+    draw_text_colour(wv,16*(systemMessageSize()-j)-16+systemMoveUp,global.systemMessage[j,0],white,white,white,white,global.systemMessage[j,1]/50);
 }
 /******************* WINDOWS ******************/
 if(openSkillWindow){
@@ -657,14 +715,21 @@ draw_set_valign(fa_top);
 draw_set_halign(fa_left);
 draw_text_colour(0,0,string(fps)+"#"+string(fps_real),white,white,white,white,1);
 /******************* COMBO ******************/
-draw_set_font(guiFont);
-draw_set_valign(fa_top);
+draw_set_font(comboFont);
+draw_set_valign(fa_center);
 draw_set_halign(fa_left);
-if (totalHits &gt; 0) {
-    draw_text_colour(0,32,string(totalPlayerDamage)+" damage!",white,white,white,white,1);
-    draw_text_colour(0,64,string(totalHits)+" hits!",white,white,white,white,1);
+if (damageSize &gt; 1) {
+    damageSize *= 0.9;
 }
-
+if (totalHits &gt; 0) {
+    for (var i = 0; i &lt; string_length(string(totalPlayerDamage)); i++) {
+        draw_sprite_ext(spr_combo_font,(floor(totalPlayerDamage/power(10,i)) mod 10),(string_length(string(totalPlayerDamage))-i)*21,48,damageSize,damageSize,0,white,1);
+    }
+    for (var i = 0; i &lt; string_length(string(totalHits)); i++) {
+        draw_sprite_ext(spr_combo_font,(floor(totalHits/power(10,i)) mod 10),(string_length(string(totalHits))-i)*21,80,damageSize,damageSize,0,white,1);
+    }
+    draw_sprite(spr_combo_back,0,23+string_length(string(totalPlayerDamage))*23,64);
+}
 </string>
           </argument>
         </arguments>

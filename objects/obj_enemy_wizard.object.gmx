@@ -31,15 +31,20 @@ level = global.level
 expGain = level*10;
 equipWeapon = true;
 weaponImage = spr_staff;
-stam = round(3*sin(level)+(3*level));
-mana = stam+6;
-enemy_max_health = round(8*cos(level)+(20*level))+(level*25);
+stam = round(power(level,2)/30)-5;
+mana = round(stam*1.2);
+enemy_max_health = round(3500*sin(level/30)+power(level,2));
 goldDrop = (level div 5)+global.luck;
 minSpotFov = 30;
 minSpotRange = 128;
 maxSpotFov = 70;
 maxSpotRange = 512;
 enemy_health = enemy_max_health;
+if (irandom(10) == 0) {
+    maxHealthBars = ceil(level/2);
+    mana *= 3;
+    healthBars = maxHealthBars;
+}
 </string>
           </argument>
         </arguments>

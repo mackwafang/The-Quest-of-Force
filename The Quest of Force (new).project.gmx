@@ -35,10 +35,13 @@
     <sprite>sprites\spr_alert</sprite>
     <sprite>sprites\spr_skill_usable</sprite>
     <sprite>sprites\spr_potions</sprite>
+    <sprite>sprites\spr_shop_icon</sprite>
     <sprite>sprites\spr_drop_item</sprite>
     <sprite>sprites\spr_buy_button</sprite>
     <sprite>sprites\spr_buffs</sprite>
     <sprite>sprites\spr_buff_font</sprite>
+    <sprite>sprites\spr_combo_back</sprite>
+    <sprite>sprites\spr_combo_font</sprite>
   </sprites>
   <backgrounds name="background">
     <background>background\bkg_grass</background>
@@ -96,6 +99,9 @@
     <script>scripts\buffListLength.gml</script>
     <script>scripts\assert.gml</script>
     <script>scripts\todo.gml</script>
+    <script>scripts\createEquipment.gml</script>
+    <script>scripts\getAllEquipmentBonus.gml</script>
+    <script>scripts\getEquipmentBonus.gml</script>
   </scripts>
   <shaders name="shaders">
     <shader type="GLSLES">shaders\shd_motionBlur.shader</shader>

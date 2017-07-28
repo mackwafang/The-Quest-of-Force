@@ -31,6 +31,21 @@ for(i = 0; i < 4; i ++){
             break;
     }
 }
+global.skillCoord[53,0] = 16;
+global.skillCoord[53,1] = 2;
+
+global.skillCoord[54,0] = 15;
+global.skillCoord[54,1] = 4;
+global.skillCoord[55,0] = 15;
+global.skillCoord[55,1] = 6;
+global.skillCoord[56,0] = 15;
+global.skillCoord[56,1] = 8;
+global.skillCoord[57,0] = 17;
+global.skillCoord[57,1] = 4;
+global.skillCoord[58,0] = 17;
+global.skillCoord[58,1] = 6;
+global.skillCoord[59,0] = 17;
+global.skillCoord[59,1] = 8;
 /************ MP Gen ************/
 global.skillCoord[16,0] = 11;
 global.skillCoord[16,1] = 4;

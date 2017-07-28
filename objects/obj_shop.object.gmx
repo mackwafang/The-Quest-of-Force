@@ -25,7 +25,7 @@
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>global.pauseBuffer = buffer_create(10240,buffer_grow,1);
+            <string>global.pauseBuffer = buffer_create(1024,buffer_grow,1);
 buffer_seek(global.pauseBuffer,buffer_seek_start,0);
 game_save_buffer(global.pauseBuffer);
 
@@ -42,11 +42,24 @@ obj_control.visible = false;
 storeFont = font_add_sprite(spr_gui_font,ord("!"),true,0);
 
 for(var i = 0; i &lt; 10; i ++) {
-    items[i,0] = 0; //Item type
-    items[i,1] = 50; //Item Price
-    items[i,2] = 10; //Item Quantity
+    items[i,0] = -1; //Item type
+    items[i,1] = 0; //Item Price
+    items[i,2] = 0; //Item Quantity
     items[i,3] = ""; //Item description
+    items[i,4] = null; //Item stat if its equipment
 }
+items[0,0] = 0;
+items[0,1] = 150; //Item Price
+items[0,2] = 50; //Item Quantity
+
+items[1,0] = 1;
+items[1,1] = 50; //Item Price
+items[1,2] = 50; //Item Quantity
+
+items[2,0] = 2; //weapon
+items[2,1] = 5; //Item Price
+items[2,2] = 1; //Item Quantity
+items[2,4] = createEquipment(equipKind.weapon,"Excalibur",3000,0,0,0,0,0,3,3,50,5,1,0);
 </string>
           </argument>
         </arguments>
@@ -78,36 +91,58 @@ yv = view_yview[0];
 draw_set_alpha(0.8);
 draw_rectangle(0,0,wv,hv,false);
 draw_set_alpha(1);
-
 var xRatio = view_wport[0]/view_wview[0];
 var yRatio = view_hport[0]/view_hview[0];
 draw_set_font(storeFont);
 draw_set_valign(fa_top);
 draw_set_halign(fa_left);
 draw_text_transformed_colour(32,32,"Shop",4,4,0,white,white,white,white,1);
-
 for(var i = 0; i &lt; 10; i++) {
     var xx = 32+(i div 5)*512;
     var yy = 156+(i mod 5)*80;
     var image = 0;
-    if (items[i,0] &gt; -1) {
+    if (items[i,2] &gt; 0) {
         draw_sprite(spr_potions,items[i,0],xx,yy);
         draw_set_valign(fa_top);
         draw_text_colour(xx+70,yy+32,items[i,3],white,white,white,white,1);
         draw_set_valign(fa_bottom);
         draw_set_halign(fa_left);
-        draw_sprite_ext(spr_drop_item,0,xx+60,yy+48,2,2,0,white,1);
-        draw_text_colour(xx+70,yy+64,string(items[i,1])+" "+string(items[i,2])+" left",white,white,white,white,1); // Price
+        draw_sprite_ext(spr_drop_item,0,xx+60,yy+16,2,2,0,white,1);
+        draw_text_colour(xx+70,yy+64,string(items[i,1])+"#"+string(items[i,2])+" left",white,white,white,white,1); // Price
         if(popup_mouse_message((xx+320)/xRatio,yy/yRatio,(xx+448)/xRatio,(yy+64)/yRatio,false)) {
             image = 1;
             if(mouse_check_button_pressed(mb_left)) {
                 image = 2;
-                if(items[i,2] &gt; 1) {
-                    items[i,2]--;
-                }
-                else {
-                    items[i,0] = -1;
-                    items[i,1] = 0;
+                if (global.gold &gt;= items[i,1]) {
+                    if(items[i,2] &gt; 0) {
+                        items[i,2]--;
+                        global.gold -= items[i,1];
+                        switch(items[i,0]) {
+                            case 0: //HP potion
+                                global.HPPotion ++;
+                                break;
+                            case 1: //SP potion
+                                global.SPPotion ++;
+                                break;
+                            case 2: //Equipment
+                                if (is_array(items[i,4])) {
+                                    var purchased = items[i,4];
+                                    var equipSlot = purchased[0];
+                                    var resell;
+                                    for (var j = 0; j &lt; array_length_2d(global.equipment,equipSlot); j++) {
+                                        resell[j+1] = global.equipment[equipSlot,j];
+                                    }
+                                    resell[0] = equipSlot;
+                                    items[i,4] = resell;
+                                    items[i,2] = resell[13];
+                                    for (var j = 0; j &lt; array_length_2d(global.equipment,equipSlot); j++) {
+                                        global.equipment[equipSlot,j] = purchased[j+1];
+                                    }
+                                    items[i,2]++;
+                                }
+                                break;
+                        }
+                    }
                 }
             }
         }

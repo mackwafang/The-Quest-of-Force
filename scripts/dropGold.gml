@@ -1,6 +1,5 @@
 ///dropGold(value)
 value = argument0;
-print(value);
 if(value >= 5000) {
     with(instance_create(x,y,obj_drop_item)) {image_index = 8;}
     dropGold(value-5000);
